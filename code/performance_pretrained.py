@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 
 from torchinfo import summary
 
-batch_size = 128
+batch_size = 64
 
 class ImageClassification(MicroMind):
 
@@ -25,7 +25,6 @@ class ImageClassification(MicroMind):
 
         #loading the new model
         #self.modules["feature_extractor"].load_state_dict(torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/epoch_299_val_loss_3.5072.ckpt")["classifier"])
-
 
     def forward(self, batch):
         return self.modules["feature_extractor"](batch[0])
