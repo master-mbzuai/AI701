@@ -24,12 +24,11 @@ class ImageClassification(MicroMind):
         self.d = 10
 
         self.modules["feature_extractor"] = PhiNet(
-             #(3, 64, 64), include_top=False, alpha=1.335, beta=1.5
-             (3, 32, 32), include_top=True
+             (3, 32, 32), include_top=False, num_classes=100
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/epoch_299_val_loss_3.5072.ckpt")["classifier"]
+        pretrained_dict = torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/pre_trained_scratch_300.ckpt")["feature_extractor"]
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
@@ -38,23 +37,18 @@ class ImageClassification(MicroMind):
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(model_dict)
 
-        self.modules["classifier"] = nn.Sequential(
-            nn.AdaptiveAvgPool2d((1, 1)),
-            nn.Flatten(),
-            nn.Linear(in_features=self.input, out_features=self.output)
-        )
-
         self.modules["adaptive_classifier"] = nn.Sequential(
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
-                nn.Linear(in_features=self.input, out_features=self.d),
-                # no relu
+                nn.Linear(in_features=self.input, out_features=self.d),                
                 nn.Linear(in_features=self.d, out_features=self.output)
             )        
+        
+        self.modules["feature_extractor"].requires_grad = False        
+
 
     def forward(self, batch):
-        x = self.modules["feature_extractor"](batch[0])
-        #x = self.modules["classifier"](x)
+        x = self.modules["feature_extractor"](batch[0])        
         x = self.modules["adaptive_classifier"](x)
         return x
 
@@ -64,11 +58,7 @@ class ImageClassification(MicroMind):
 
 if __name__ == "__main__":
     hparams = parse_arguments()
-    m = ImageClassification(hparams)
-
-    summary(m.modules["feature_extractor"], input_size=(batch_size, 3, 32, 32))
-    summary(m.modules["classifier"], input_size=(128,m.input,1,1))
-    summary(m.modules["adaptive_classifier"], input_size=(128,m.input,1,1))
+    m = ImageClassification(hparams)    
 
     def compute_accuracy(pred, batch):
         tmp = (pred.argmax(1) == batch[1]).float()
@@ -95,7 +85,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=300,
+        epochs=30,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        
@@ -106,10 +96,3 @@ if __name__ == "__main__":
     )
 
     m.export("output_onnx", "onnx", (3, 32, 32))
-
-
-
-"""
-pretrained = ImageClassification()
-pretrained.load_state_dict(torch.load("output/model.pth"))
-"""
