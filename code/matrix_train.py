@@ -25,11 +25,11 @@ class ImageClassification(MicroMind):
 
         self.modules["feature_extractor"] = PhiNet(
              #(3, 64, 64), include_top=False, alpha=1.335, beta=1.5
-             (3, 32, 32), include_top=False
+             (3, 32, 32), include_top=True
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/phinet.ckpt")["classifier"]
+        pretrained_dict = torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/epoch_299_val_loss_3.5072.ckpt")["classifier"]
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
