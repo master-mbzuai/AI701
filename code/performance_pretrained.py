@@ -20,11 +20,8 @@ class ImageClassification(MicroMind):
         super().__init__(*args, **kwargs)
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=True
-        )
-
-        #loading the new model
-        #self.modules["feature_extractor"].load_state_dict(torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/epoch_299_val_loss_3.5072.ckpt")["classifier"])
+            (3, 32, 32), include_top=True, num_classes=100
+        )        
 
     def forward(self, batch):
         return self.modules["feature_extractor"](batch[0])

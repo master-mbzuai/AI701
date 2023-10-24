@@ -20,29 +20,18 @@ class ImageClassification(MicroMind):
         super().__init__(*args, **kwargs)
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False
+            (3, 32, 32), include_top=True, num_classes=100
         )        
 
         #loading the new model        
-        pretrained_dict = torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/pre_trained_scratch_300.ckpt")["feature_extractor"]
-        model_dict = {}
-        for k, v in pretrained_dict.items():
-            if "classifier" not in k:
-                model_dict[k] = v
+        pretrained_dict = torch.load("./pretrained/test.ckpt")["feature_extractor"]        
        
-        self.modules["feature_extractor"].requires_grad = False
-
-        self.modules["classifier"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Linear(in_features=38, out_features=100)
-            )        
-        
-        self.modules.requires_grad = False
+        #loading the new model
+        self.modules["feature_extractor"].load_state_dict(pretrained_dict)
+        #self.modules["feature_extractor"].requires_grad = False
 
     def forward(self, batch):
-        x = self.modules["feature_extractor"](batch[0])       
-        x = self.modules["classifier"](x)
+        x = self.modules["feature_extractor"](batch[0])        
         return x
 
     def compute_loss(self, pred, batch):
