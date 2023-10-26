@@ -37,7 +37,7 @@ class ImageClassification(MicroMind):
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/pre_trained_scratch_300.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load("./pretrained/1000_epochs_baseline.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=30,
+        epochs=50,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        
