@@ -34,7 +34,7 @@ class ImageClassification(MicroMind):
         )        
 
         #loading the new model        
-        pretrained_dict = torch.load("./pretrained/test.ckpt", map_location=device)["feature_extractor"]
+        pretrained_dict = torch.load("./pretrained/1000_epochs_baseline.ckpt", map_location=device)["feature_extractor"]
        
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=5,
+        epochs=200,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        
