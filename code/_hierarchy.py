@@ -33,7 +33,7 @@ class ImageClassification(MicroMind):
 
         self.modules["feature_extractor"] = PhiNet(
             #(3, 32, 32), include_top=False, alpha=1.335, beta=1.5
-            (3, 32, 32), include_top=False
+            (3, 32, 32), include_top=False, num_classes=100
         )
 
         # the backbone should be frozen
@@ -58,7 +58,7 @@ class ImageClassification(MicroMind):
             nn.Linear(in_features=self.input, out_features=self.output)
         )
 
-        self.modules["adaptive_classifier"] = nn.Sequential(
+        self.modules["adaptive_classifier"] = nn.Sequential(                
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
                 nn.Linear(in_features=self.input, out_features=self.d),

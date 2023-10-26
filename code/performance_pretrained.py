@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 
 from torchinfo import summary
 
-batch_size = 64
+batch_size = 128
 
 class ImageClassification(MicroMind):
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=300,
+        epochs=1000,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        
@@ -70,10 +70,3 @@ if __name__ == "__main__":
     )
 
     m.export("output_onnx", "onnx", (3, 32, 32))
-
-
-
-"""
-pretrained = ImageClassification()
-pretrained.load_state_dict(torch.load("output/model.pth"))
-"""

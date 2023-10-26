@@ -53,7 +53,8 @@ class ImageClassification(MicroMind):
                 nn.Flatten(),
                 nn.Linear(in_features=self.input, out_features=self.d),                
                 nn.Linear(in_features=self.d, out_features=self.output)
-            )
+            )        
+        self.modules["adaptive_classifier"].requires_grad = False
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
@@ -66,6 +67,9 @@ class ImageClassification(MicroMind):
 
 if __name__ == "__main__":
     hparams = parse_arguments()
+
+    print(hparams)
+
     m = ImageClassification(hparams)    
 
     def compute_accuracy(pred, batch):
@@ -93,7 +97,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=30,
+        epochs=5,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        

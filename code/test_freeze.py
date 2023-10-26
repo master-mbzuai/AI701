@@ -11,6 +11,16 @@ from torchinfo import summary
 
 batch_size = 128
 
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")
+    print("Running on the GPU")
+elif torch.backends.mps.is_available: 
+    device = torch.device("mps")
+    print("Running on the MPS")
+else:
+    device = torch.device("cpu")
+    print("Running on the CPU")
+
 class ImageClassification(MicroMind):
 
     # test 1 with n as input vector size and m classes custom d
@@ -24,11 +34,11 @@ class ImageClassification(MicroMind):
         )        
 
         #loading the new model        
-        pretrained_dict = torch.load("./pretrained/test.ckpt")["feature_extractor"]        
+        pretrained_dict = torch.load("./pretrained/test.ckpt", map_location=device)["feature_extractor"]
        
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict)
-        #self.modules["feature_extractor"].requires_grad = False
+        self.modules["feature_extractor"].requires_grad = False
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
@@ -40,6 +50,10 @@ class ImageClassification(MicroMind):
 
 if __name__ == "__main__":
     hparams = parse_arguments()
+
+    # changing the hyperparameters        
+    hparams.opt = 'sgd'
+
     m = ImageClassification(hparams)    
 
     def compute_accuracy(pred, batch):
@@ -67,7 +81,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=30,
+        epochs=5,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        

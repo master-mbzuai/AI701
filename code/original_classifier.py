@@ -11,6 +11,16 @@ from torchinfo import summary
 
 batch_size = 128
 
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")
+    print("Running on the GPU")
+elif torch.backends.mps.is_available: 
+    device = torch.device("mps")
+    print("Running on the MPS")
+else:
+    device = torch.device("cpu")
+    print("Running on the CPU")
+
 class ImageClassification(MicroMind):
 
     # test 1 with n as input vector size and m classes custom d
@@ -19,29 +29,34 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.input = 38
+        self.output = 100        
+
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False
+             (3, 32, 32), include_top=False, num_classes=100
         )        
 
-        #loading the new model        
-        pretrained_dict = torch.load("/Users/sebastiancavada/Documents/scsv/semester-1/ai/project/code/pretrained/pre_trained_scratch_300.ckpt")["feature_extractor"]
+        # Taking away the classifier from pretrained model
+        pretrained_dict = torch.load("./pretrained/pre_trained_scratch_300.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
                 model_dict[k] = v
-       
+
+        #loading the new model
+        self.modules["feature_extractor"].load_state_dict(model_dict)
         self.modules["feature_extractor"].requires_grad = False
 
-        self.modules["classifier"] = nn.Sequential(
+        self.modules["original_classifier"] = nn.Sequential(
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
-                nn.Linear(in_features=38, out_features=100)
+                nn.Linear(in_features=self.input, out_features=self.output),
             )        
 
+
     def forward(self, batch):
-        x = self.modules["feature_extractor"](batch[0])
-        #x = self.modules["classifier"](x)
-        x = self.modules["classifier"](x)
+        x = self.modules["feature_extractor"](batch[0])        
+        x = self.modules["original_classifier"](x)
         return x
 
     def compute_loss(self, pred, batch):

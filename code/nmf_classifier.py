@@ -48,7 +48,8 @@ class ImageClassification(MicroMind):
         self.modules["feature_extractor"].load_state_dict(model_dict)
         self.modules["feature_extractor"].requires_grad = False
 
-        self.modules["adaptive_classifier"] = nn.Sequential(
+        self.modules["nmf_classifier"] = nn.Sequential(
+                nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
                 nn.Linear(in_features=self.input, out_features=self.d),                
@@ -57,7 +58,7 @@ class ImageClassification(MicroMind):
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
-        x = self.modules["adaptive_classifier"](x)
+        x = self.modules["nmf_classifier"](x)
         return x
 
     def compute_loss(self, pred, batch):
