@@ -38,7 +38,7 @@ class ImageClassification(MicroMind):
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/1000_epochs_baseline.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load("./code/pretrained/1000_epochs_baseline.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
@@ -57,10 +57,6 @@ class ImageClassification(MicroMind):
         for x, param in self.modules["feature_extractor"].named_parameters():    
             param.requires_grad = False
 
-        for x, param in self.modules["adaptive_classifier"].named_parameters():
-            if(x != '3.bias'):
-                param.requires_grad = False
-
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
         x = self.modules["adaptive_classifier"](x)
@@ -73,6 +69,7 @@ class ImageClassification(MicroMind):
 if __name__ == "__main__":
     hparams = parse_arguments()    
     hparams.opt = 'sgd'
+    hparams.output_folder = 'adaptive_test/'
 
     print(hparams)
     m = ImageClassification(hparams)    
