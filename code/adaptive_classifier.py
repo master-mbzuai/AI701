@@ -26,12 +26,12 @@ class ImageClassification(MicroMind):
     # test 1 with n as input vector size and m classes custom d
     # n has to be calculated from the output of the neural network of the feature extractor
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, inner_layer_width, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.input = 38
         self.output = 100
-        self.d = 10
+        self.d = inner_layer_width
 
         self.modules["feature_extractor"] = PhiNet(
              (3, 32, 32), include_top=False, num_classes=100
@@ -46,7 +46,8 @@ class ImageClassification(MicroMind):
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(model_dict)
-        self.modules["feature_extractor"].requires_grad = False
+        for x, param in self.modules["feature_extractor"].named_parameters():
+            param.requires_grad = False
 
         self.modules["adaptive_classifier"] = nn.Sequential(
                 nn.AdaptiveAvgPool2d((1, 1)),
@@ -61,46 +62,53 @@ class ImageClassification(MicroMind):
         return x
 
     def compute_loss(self, pred, batch):
-        return nn.CrossEntropyLoss()(pred, batch[1])
+        return nn.CrossEntropyLoss()(pred, batch[1])    
 
+if __name__ == "__main__":    
 
-if __name__ == "__main__":
-    hparams = parse_arguments()
-    m = ImageClassification(hparams)    
+    hparams = parse_arguments()    
 
-    def compute_accuracy(pred, batch):
-        tmp = (pred.argmax(1) == batch[1]).float()
-        return tmp
+    d_ranges = [10, 50, 75]    
+    performances = [] 
 
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
+    for d in d_ranges:
+        hparams.output_folder = 'adaptive_exp/' + str(d)                 
 
-    trainset = torchvision.datasets.CIFAR100(
-        root="data/cifar-100", train=True, download=True, transform=transform
-    )
-    trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=batch_size, shuffle=True, num_workers=1
-    )
+        m = ImageClassification(hparams)    
 
-    testset = torchvision.datasets.CIFAR100(
-        root="data/cifar-100", train=False, download=True, transform=transform
-    )
-    testloader = torch.utils.data.DataLoader(
-        testset, batch_size=batch_size, shuffle=False, num_workers=1
-    )
+        def compute_accuracy(pred, batch):
+            tmp = (pred.argmax(0) == batch[1]).float()
+            return tmp
 
-    acc = Metric(name="accuracy", fn=compute_accuracy)
+        transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize((-1.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        )
 
-    m.train(
-        epochs=50,
-        datasets={"train": trainloader, "val": testloader, "test": testloader},
-        metrics=[acc],
-        debug=hparams.debug,        
-    )
+        trainset = torchvision.datasets.CIFAR100(
+            root="data/cifar-100", train=True, download=True, transform=transform
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=batch_size, shuffle=True, num_workers=0
+        )
 
-    m.test(
-        datasets={"test": testloader},
-    )
+        testset = torchvision.datasets.CIFAR100(
+            root="data/cifar-100", train=False, download=True, transform=transform
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=batch_size, shuffle=False, num_workers=0
+        )
 
-    m.export("output_onnx", "onnx", (3, 32, 32))
+        acc = Metric(name="accuracy", fn=compute_accuracy)
+
+        m.train(
+            epochs=49,
+            datasets={"train": trainloader, "val": testloader, "test": testloader},
+            metrics=[acc],
+            debug=hparams.debug,        
+        )
+
+        m.test(
+            datasets={"test": testloader},
+        )     
+
+        

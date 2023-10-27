@@ -45,16 +45,21 @@ class ImageClassification(MicroMind):
                 model_dict[k] = v
 
         #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)
-        self.modules["feature_extractor"].requires_grad = False
+        self.modules["feature_extractor"].load_state_dict(model_dict)         
 
         self.modules["adaptive_classifier"] = nn.Sequential(
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
                 nn.Linear(in_features=self.input, out_features=self.d),                
                 nn.Linear(in_features=self.d, out_features=self.output)
-            )        
-        self.modules["adaptive_classifier"].requires_grad = False
+            )
+        
+        for x, param in self.modules["feature_extractor"].named_parameters():    
+            param.requires_grad = False
+
+        for x, param in self.modules["adaptive_classifier"].named_parameters():
+            if(x != '3.bias'):
+                param.requires_grad = False
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
@@ -66,10 +71,10 @@ class ImageClassification(MicroMind):
 
 
 if __name__ == "__main__":
-    hparams = parse_arguments()
+    hparams = parse_arguments()    
+    hparams.opt = 'sgd'
 
     print(hparams)
-
     m = ImageClassification(hparams)    
 
     def compute_accuracy(pred, batch):
@@ -97,7 +102,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=200,
+        epochs=20,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,        

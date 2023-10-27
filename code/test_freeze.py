@@ -38,7 +38,10 @@ class ImageClassification(MicroMind):
        
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict)
-        self.modules["feature_extractor"].requires_grad = False
+
+        for x, param in self.modules["feature_extractor"].named_parameters():    
+            param.requires_grad = False
+        
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        

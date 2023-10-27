@@ -32,6 +32,8 @@ class ImageClassification(MicroMind):
 
 if __name__ == "__main__":
     hparams = parse_arguments()
+    hparams.output_folder = 'pretrained'
+    
     m = ImageClassification(hparams)
 
     def compute_accuracy(pred, batch):
@@ -59,10 +61,10 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=1000,
+        epochs=3000,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
-        debug=hparams.debug,        
+        debug=hparams.debug,
     )
 
     m.test(
