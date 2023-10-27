@@ -1,0 +1,4 @@
+code/data/*
+micromind/*
+results/
+output_onnx/
