@@ -32,16 +32,16 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = 38
+        self.input = 576
         self.output = 100
         self.d = inner_layer_width
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False, num_classes=100
+            (3, 32, 32), include_top=False, num_classes=100, alpha=3
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/1000_epochs_baseline.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load("./pretrained/a3_baseline.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
@@ -74,11 +74,12 @@ def save_parameters(model, path):
     macs_backbone, params_backbone = get_model_complexity_info(model.modules["feature_extractor"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)        
     summary_backbone = summary(model.modules["feature_extractor"], input_size=(batch_size, 3, 32, 32))    
+    print(summary_backbone)
 
-    input = (38, 1, 1)
+    input = (model.input, 1, 1)
     macs_classifier, params_classifier = get_model_complexity_info(model.modules["adaptive_classifier"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)        
-    summary_classifier = summary(model.modules["adaptive_classifier"], input_size=(10, 38, 1, 1))    
+    summary_classifier = summary(model.modules["adaptive_classifier"], input_size=(10, model.input, 1, 1))    
 
     output = "BACKBONE\n" 
     output += "MACs {}, learnable parameters {}\n".format(macs_backbone, params_backbone)
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     
     print("Running experiment with d = {}".format(d))    
 
-    hparams.output_folder = 'results/adaptive_exp/' + str(d) + '/'
+    hparams.output_folder = 'results/adaptive_exp_3/' + str(d) + '/'
 
     m = ImageClassification(hparams,inner_layer_width = d)    
 

@@ -23,8 +23,8 @@ def extract_metrics(input_string):
     return extracted_data
 
 #open text file in read mode
-text_file = open("../logs/1000_log.txt", "r")
- 
+#text_file = open("../logs/1000_log.txt", "r")
+text_file = open("../logs/a3.txt", "r")
 
 # Your input string
 #read whole file to a string
@@ -38,7 +38,7 @@ print(extracted_data)
 plt.plot(extracted_data["epoch"], extracted_data["train_loss"], alpha=0.7, c='blue', label='Parameters')
 plt.plot(extracted_data["epoch"], extracted_data["val_loss"], alpha=0.7, c='red', label='Parameters')
 
-plt.title('Accuracy vs Compression - 200 epochs training')
+plt.title('Train loss (blue) VS Validation loss')
 plt.xlabel('Number')
 plt.ylabel('Accuracy')
 plt.grid(True)

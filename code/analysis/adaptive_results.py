@@ -42,7 +42,7 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_exp/"
+    path = "../results/adaptive_exp_0/"
 
     for folder in os.listdir(path):        
         results[folder] = {}
