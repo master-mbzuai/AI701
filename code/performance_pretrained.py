@@ -50,22 +50,32 @@ if __name__ == "__main__":
     trainset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=True, download=True, transform=transform
     )
-    trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=batch_size, shuffle=True, num_workers=1
-    )
-
     testset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=False, download=True, transform=transform
     )
+
+    ## split into train, val, test      
+    val_size = 5000
+    train_size = len(trainset) - val_size
+    train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
+
+    trainloader = torch.utils.data.DataLoader(
+        train, batch_size=batch_size, shuffle=True, num_workers=1
+    )
+    valloader = torch.utils.data.DataLoader(
+        val, batch_size=batch_size, shuffle=False, num_workers=1
+    )    
     testloader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, shuffle=False, num_workers=1
     )
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
+    print(len(testloader), len(trainloader), len(valloader))
+
     m.train(
-        epochs=55,
-        datasets={"train": trainloader, "val": testloader, "test": testloader},
+        epochs=500,
+        datasets={"train": trainloader, "val": valloader},
         metrics=[acc],
         debug=hparams.debug,
     )
