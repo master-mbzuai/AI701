@@ -1,1 +1,0 @@
-Epoch 0: train_accuracy: 0.97 - train_loss: 0.09; val_accuracy: 0.8286 - val_loss: 0.6145.
