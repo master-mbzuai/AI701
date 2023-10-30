@@ -1,6 +1,7 @@
 import os
 import re
 from matplotlib import pyplot as plt
+import matplotlib.colors as mcolors
 
 # read folder 
 
@@ -69,23 +70,31 @@ if __name__ == "__main__":
     accuracies = [float(data[key]['accuracy']) for key in data.keys()]
     params = [float(data[key]['mac_classifier'].split()[0])*20 for key in data.keys()]  # Assuming KMac, so multiplied by 1000
 
+    # Choose the colormap
+    colormap = plt.cm.viridis
+
+    # Normalize y-values between 0 and 1
+    norm = mcolors.Normalize(vmin=min(params), vmax=max(params))
+
+    dot_colors = [colormap(norm(value)) for value in params]
+
     # Sort by numbers for better plotting
     sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
     numbers = [numbers[i] for i in sorted_indices]
     accuracies = [accuracies[i] for i in sorted_indices]
-    params = [params[i] for i in sorted_indices]
+    params = [params[i] for i in sorted_indices]    
 
     # Create the scatter plot
-    plt.scatter(numbers, accuracies, s=params, alpha=0.5, c='blue', label='Parameters')
+    plt.scatter(numbers, accuracies, alpha=0.5, c=dot_colors, label='Parameters')
 
     # Labeling each point with the corresponding number
     for i, txt in enumerate(numbers):
         plt.annotate(txt, (numbers[i], accuracies[i]))
 
     plt.title('Accuracy vs Compression - 200 epochs training')
-    plt.xlabel('Number')
+    plt.xlabel('Compression factor d')
     plt.ylabel('Accuracy')
-    plt.colorbar(label='Parameters (KMac)')
+    plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=colormap), label='Parameters (KMac)')
     plt.grid(True)
-
-    plt.show()
+    plt.savefig("./results/adaptive_vanilla_default.jpg")
+    plt.show()    

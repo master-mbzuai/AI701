@@ -13,6 +13,7 @@ batch_size = 128
 
 class ImageClassification(MicroMind):
 
+    # https://machine-learning.paperspace.com/wiki/accuracy-and-loss
     # test 1 with n as input vector size and m classes custom d
     # n has to be calculated from the output of the neural network of the feature extractor
 
@@ -20,7 +21,7 @@ class ImageClassification(MicroMind):
         super().__init__(*args, **kwargs)
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=True, num_classes=100
+            (3, 32, 32), include_top=True, num_classes=100, alpha=3
         )        
 
     def forward(self, batch):
@@ -31,9 +32,9 @@ class ImageClassification(MicroMind):
 
 
 if __name__ == "__main__":
-    hparams = parse_arguments()    
+    hparams = parse_arguments()
 
-    hparams.output_folder = 'pretrained_a3'
+    hparams.output_folder = 'pretrained/a3_2'
     
     m = ImageClassification(hparams)
 
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         return tmp
 
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), transforms.RandomResizedCrop(size=(32, 32), antialias=True), torchvision.transforms.RandomRotation(10)]
     )
 
     trainset = torchvision.datasets.CIFAR100(
@@ -71,11 +72,9 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
-    print(len(testloader), len(trainloader), len(valloader))
-
     m.train(
-        epochs=500,
-        datasets={"train": trainloader, "val": valloader},
+        epochs=100,
+        datasets={"train": trainloader, "val":valloader},
         metrics=[acc],
         debug=hparams.debug,
     )

@@ -1,1 +1,0 @@
-Testing test_accuracy: 0.30 - test_loss: 3.45; 

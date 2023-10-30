@@ -24,6 +24,12 @@ else:
     device = torch.device("cpu")
     print("Running on the CPU")
 
+# 192 a1, 384 a2, 576 a3
+
+alpha = 2
+
+inputs = [192, 384, 576]
+
 class ImageClassification(MicroMind):
 
     # test 1 with n as input vector size and m classes custom d
@@ -32,16 +38,16 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = 576
+        self.input = inputs[alpha-1]
         self.output = 100
         self.d = inner_layer_width
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False, num_classes=100, alpha=3
+            (3, 32, 32), include_top=False, num_classes=100, alpha=alpha
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/a3_baseline.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load("./pretrained/a" + str(alpha) + "/baseline.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
@@ -100,11 +106,11 @@ if __name__ == "__main__":
     hparams = parse_arguments()  
     print(hparams)  
 
-    d = hparams.d        
+    d = hparams.d    
     
-    print("Running experiment with d = {}".format(d))    
+    print("Running experiment with d = {}".format(d))        
 
-    hparams.output_folder = 'results/adaptive_exp_3/' + str(d) + '/'
+    hparams.output_folder = 'results/adaptive_exp_1/' + str(d) + '/'
 
     m = ImageClassification(hparams,inner_layer_width = d)    
 
@@ -135,7 +141,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=200,
+        epochs=100,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,

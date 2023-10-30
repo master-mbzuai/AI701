@@ -24,7 +24,8 @@ def extract_metrics(input_string):
 
 #open text file in read mode
 #text_file = open("../logs/1000_log.txt", "r")
-text_file = open("../logs/a3.txt", "r")
+#text_file = open("../pretrained/a15/exp/train_log.txt", "r")
+text_file = open("../results/adaptive_exp_0/90/exp/train_log.txt", "r")
 
 # Your input string
 #read whole file to a string
@@ -32,14 +33,13 @@ input_string = text_file.read()
 
 # Extract metrics
 extracted_data = extract_metrics(input_string)
-print(extracted_data)
 
 # Create the scatter plot
 plt.plot(extracted_data["epoch"], extracted_data["train_loss"], alpha=0.7, c='blue', label='Parameters')
 plt.plot(extracted_data["epoch"], extracted_data["val_loss"], alpha=0.7, c='red', label='Parameters')
 
 plt.title('Train loss (blue) VS Validation loss')
-plt.xlabel('Number')
+plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.grid(True)
 plt.show()

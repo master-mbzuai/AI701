@@ -1,6 +1,10 @@
 import os
 import re
 from matplotlib import pyplot as plt
+import matplotlib.colors as mcolors
+
+exp = 0
+alpha = 3
 
 # read folder 
 
@@ -42,7 +46,7 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_exp_1/"
+    path = "../results/adaptive_exp_" + str(exp) + "/"
 
     for folder in os.listdir(path):        
         results[folder] = {}
@@ -67,6 +71,15 @@ if __name__ == "__main__":
     accuracies = [float(data[key]['accuracy']) for key in data.keys()]
     params = [float(data[key]['mac_classifier'].split()[0])*0.01 for key in data.keys()]  # Assuming KMac, so multiplied by 1000
 
+    # Choose the colormap
+    colormap = plt.cm.viridis
+
+    # Normalize y-values between 0 and 1
+    norm = mcolors.Normalize(vmin=min(params), vmax=max(params))
+
+    dot_colors = [colormap(norm(value)) for value in params]
+
+
     # Sort by numbers for better plotting
     sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
     numbers = [numbers[i] for i in sorted_indices]
@@ -74,7 +87,7 @@ if __name__ == "__main__":
     params = [params[i] for i in sorted_indices]
 
     # Create the scatter plot
-    plt.scatter(numbers, accuracies, s=params, alpha=0.5, c='blue', label='Parameters')
+    plt.scatter(numbers, accuracies, s=50, alpha=0.5, c=dot_colors, label='Parameters')
 
     # Labeling each point with the corresponding number
     for i, txt in enumerate(numbers):
@@ -85,4 +98,5 @@ if __name__ == "__main__":
     plt.ylabel('Accuracy')
     plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.show()
+    plt.savefig("./results/adaptive_vanilla_a" + str(alpha))
+    plt.show()    
