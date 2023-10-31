@@ -3,6 +3,9 @@ import re
 from matplotlib import pyplot as plt
 import matplotlib.colors as mcolors
 
+exp = 0
+alpha = 3
+
 # read folder 
 
 def read_architecture(file_path):
@@ -20,7 +23,7 @@ def read_architecture(file_path):
             section = 'CLASSIFIER'
 
         if section:
-            macs_match = re.search(r'MACs (\d+\.\d+ KMac|M)', line)
+            macs_match = re.search(r'MACs (\d+\.\d+)', line)
             params_match = re.search(r'learnable parameters (\d+\.\d+ k|\d+)', line)
 
             if macs_match:
@@ -43,7 +46,7 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_exp_0/"
+    path = "../results/adaptive_exp/a" + str(alpha) + "/" + str(exp) + "/"
 
     for folder in os.listdir(path):        
         results[folder] = {}
@@ -51,13 +54,11 @@ if __name__ == "__main__":
             if("architecture.txt" == exp):
                 meta = read_architecture(path + folder + "/" + exp)                
                 results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
-                quantity = meta["CLASSIFIER_MACs"].split(" ")[0]
-                unit = meta["CLASSIFIER_MACs"].split(" ")[1]
+                quantity = meta["CLASSIFIER_MACs"]                
 
-                quantity2 = meta["BACKBONE_MACs"].split(" ")[0]
-                unit = meta["BACKBONE_MACs"].split(" ")[1]
+                quantity2 = meta["BACKBONE_MACs"]                
 
-                results[folder]["mac_all"] = str(float(quantity) + float(quantity2)) + " " + unit                                                                                      
+                results[folder]["mac_all"] = str(float(quantity) + float(quantity2))
             elif("test_set_result.txt" == exp):
                 accuracy, loss = read_results(path + folder + "/" + exp)
                 results[folder]["accuracy"] = accuracy
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     # Extract numbers, accuracies, and parameters from the data
     numbers = [int(key) for key in data.keys()]
     accuracies = [float(data[key]['accuracy']) for key in data.keys()]
-    params = [float(data[key]['mac_classifier'].split()[0])*20 for key in data.keys()]  # Assuming KMac, so multiplied by 1000
+    params = [float(data[key]['mac_classifier'].split()[0])*0.01 for key in data.keys()]  # Assuming KMac, so multiplied by 1000
 
     # Choose the colormap
     colormap = plt.cm.viridis
@@ -78,23 +79,29 @@ if __name__ == "__main__":
 
     dot_colors = [colormap(norm(value)) for value in params]
 
+
     # Sort by numbers for better plotting
     sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
     numbers = [numbers[i] for i in sorted_indices]
     accuracies = [accuracies[i] for i in sorted_indices]
-    params = [params[i] for i in sorted_indices]    
+    params = [params[i] for i in sorted_indices]
 
     # Create the scatter plot
-    plt.scatter(numbers, accuracies, alpha=0.5, c=dot_colors, label='Parameters')
+    plt.scatter(numbers, accuracies, s=50, alpha=0.5, c=dot_colors, label='Parameters')
 
     # Labeling each point with the corresponding number
     for i, txt in enumerate(numbers):
         plt.annotate(txt, (numbers[i], accuracies[i]))
 
-    plt.title('Accuracy vs Compression - 200 epochs training')
-    plt.xlabel('Compression factor d')
+    if(alpha > 10):
+        alpha_title = str(alpha/10)
+    else:
+        alpha_title = str(alpha)
+
+    plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 20 epochs')
+    plt.xlabel('Number')
     plt.ylabel('Accuracy')
-    plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=colormap), label='Parameters (KMac)')
+    plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig("./results/adaptive_vanilla_default.jpg")
+    plt.savefig("./results/adaptive_vanilla_a" + str(alpha))
     plt.show()    

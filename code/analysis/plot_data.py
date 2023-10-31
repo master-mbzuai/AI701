@@ -22,10 +22,12 @@ def extract_metrics(input_string):
 
     return extracted_data
 
+
+path = "../pretrained/a0.2/exp/"
 #open text file in read mode
 #text_file = open("../logs/1000_log.txt", "r")
-#text_file = open("../pretrained/a15/exp/train_log.txt", "r")
-text_file = open("../results/adaptive_exp_0/90/exp/train_log.txt", "r")
+text_file = open(path + "train_log.txt", "r")
+#text_file = open("../results/adaptive_exp_0/90/exp/train_log.txt", "r")
 
 # Your input string
 #read whole file to a string
@@ -42,4 +44,5 @@ plt.title('Train loss (blue) VS Validation loss')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.grid(True)
+plt.savefig(path + 'trainloss.jpg')
 plt.show()

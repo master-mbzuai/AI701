@@ -11,6 +11,8 @@ from torchinfo import summary
 
 batch_size = 128
 
+alpha = 3
+
 class ImageClassification(MicroMind):
 
     # https://machine-learning.paperspace.com/wiki/accuracy-and-loss
@@ -21,20 +23,24 @@ class ImageClassification(MicroMind):
         super().__init__(*args, **kwargs)
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=True, num_classes=100, alpha=3
+            (3, 32, 32), include_top=True, num_classes=100, alpha=alpha
         )        
 
     def forward(self, batch):
         return self.modules["feature_extractor"](batch[0])
 
     def compute_loss(self, pred, batch):
+        #print(pred)
         return nn.CrossEntropyLoss()(pred, batch[1])
 
 
 if __name__ == "__main__":
     hparams = parse_arguments()
 
-    hparams.output_folder = 'pretrained/a3_2'
+    hparams.output_folder = 'pretrained/a' + str(alpha)
+    hparams.lr = 0.01
+    hparams.opt = 'adam'
+    hparams.momentum = 0.03
     
     m = ImageClassification(hparams)
 
@@ -61,7 +67,7 @@ if __name__ == "__main__":
     train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
 
     trainloader = torch.utils.data.DataLoader(
-        train, batch_size=batch_size, shuffle=True, num_workers=1
+        train, batch_size=batch_size, shuffle=True, num_workers=8
     )
     valloader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, shuffle=False, num_workers=1
@@ -73,14 +79,15 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=100,
+        epochs=50,
         datasets={"train": trainloader, "val":valloader},
         metrics=[acc],
         debug=hparams.debug,
     )
 
-    m.test(
+    result = m.test(
         datasets={"test": testloader},
     )
 
-    m.export("output_onnx", "onnx", (3, 32, 32))
+    with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
+        file.write(result)

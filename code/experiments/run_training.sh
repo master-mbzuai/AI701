@@ -1,0 +1,1 @@
+xterm "python adaptive_classifier.py --d ${args[$i]}; exit" &

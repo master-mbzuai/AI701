@@ -26,9 +26,12 @@ else:
 
 # 192 a1, 384 a2, 576 a3
 
-alpha = 2
+exp = 0
+alpha_id = 2
 
-inputs = [192, 384, 576]
+alphas_str = ['1', '15', '2', '3']
+alphas = [1, 1.5, 2, 3]
+inputs = [192, 288, 384, 576]
 
 class ImageClassification(MicroMind):
 
@@ -38,16 +41,16 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = inputs[alpha-1]
+        self.input = inputs[alpha_id]
         self.output = 100
         self.d = inner_layer_width
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False, num_classes=100, alpha=alpha
+            (3, 32, 32), include_top=False, num_classes=100, alpha=alphas[alpha_id]
         )        
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/a" + str(alpha) + "/baseline.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load("./pretrained/a" + alphas_str[alpha_id] + "/exp/baseline.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
@@ -104,15 +107,17 @@ def save_parameters(model, path):
 if __name__ == "__main__":    
 
     hparams = parse_arguments()  
+    hparams.lr = 0.01
     print(hparams)  
 
-    d = hparams.d    
+    d = int(hparams.d)
     
     print("Running experiment with d = {}".format(d))        
 
-    hparams.output_folder = 'results/adaptive_exp_1/' + str(d) + '/'
+    hparams.output_folder = 'results/adaptive_exp/a' + alphas_str[alpha_id] + '/'+str(exp)+'/' + str(d) + '/'
+    print(hparams.output_folder)
 
-    m = ImageClassification(hparams,inner_layer_width = d)    
+    m = ImageClassification(hparams, inner_layer_width = d)    
 
     def compute_accuracy(pred, batch):
         tmp = (pred.argmax(1) == batch[1]).float()
@@ -126,7 +131,7 @@ if __name__ == "__main__":
         root="data/cifar-100", train=True, download=True, transform=transform
     )
     trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=batch_size, shuffle=True, num_workers=1
+        trainset, batch_size=batch_size, shuffle=True, num_workers=8
     )
 
     testset = torchvision.datasets.CIFAR100(
@@ -141,7 +146,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=100,
+        epochs=20,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,

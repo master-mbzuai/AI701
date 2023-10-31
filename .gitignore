@@ -4,3 +4,4 @@ output_onnx/
 code/results_0/
 code/results/*
 code/pretrained/*
+code/results_test_bad/*
