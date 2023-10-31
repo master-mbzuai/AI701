@@ -145,8 +145,10 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
+    epochs = 200
+
     m.train(
-        epochs=200,
+        epochs=epochs,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,
@@ -155,6 +157,8 @@ if __name__ == "__main__":
     result = m.test(
         datasets={"test": testloader},
     )
+
+    result["epochs"] = epochs
 
     with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
         file.write(result)

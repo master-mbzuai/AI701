@@ -55,3 +55,11 @@ Epoch 52: train_accuracy: 0.46 - train_loss: 2.05; val_accuracy: 0.4712 - val_lo
 Epoch 53: train_accuracy: 0.46 - train_loss: 2.04; val_accuracy: 0.4688 - val_loss: 1.9920.
 Epoch 54: train_accuracy: 0.46 - train_loss: 2.05; val_accuracy: 0.4649 - val_loss: 2.0087.
 Epoch 55: train_accuracy: 0.46 - train_loss: 2.04; val_accuracy: 0.4772 - val_loss: 1.9686.
+Epoch 56: train_accuracy: 0.46 - train_loss: 2.04; val_accuracy: 0.4826 - val_loss: 1.9494.
+Epoch 57: train_accuracy: 0.46 - train_loss: 2.04; val_accuracy: 0.4774 - val_loss: 1.9536.
+Epoch 58: train_accuracy: 0.46 - train_loss: 2.05; val_accuracy: 0.4822 - val_loss: 1.9518.
+Epoch 59: train_accuracy: 0.47 - train_loss: 2.03; val_accuracy: 0.4655 - val_loss: 2.0249.
+Epoch 60: train_accuracy: 0.47 - train_loss: 2.03; val_accuracy: 0.4738 - val_loss: 1.9850.
+Epoch 61: train_accuracy: 0.47 - train_loss: 2.03; val_accuracy: 0.4681 - val_loss: 1.9627.
+Epoch 62: train_accuracy: 0.46 - train_loss: 2.05; val_accuracy: 0.4657 - val_loss: 2.0062.
+Epoch 63: train_accuracy: 0.46 - train_loss: 2.05; val_accuracy: 0.4786 - val_loss: 1.9293.
