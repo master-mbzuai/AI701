@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as mcolors
 
 exp = 0
-alpha = 3
+alpha = 2
 
 # read folder 
 

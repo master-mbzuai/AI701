@@ -79,7 +79,7 @@ if __name__ == "__main__":
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
     m.train(
-        epochs=50,
+        epochs=100,
         datasets={"train": trainloader, "val":valloader},
         metrics=[acc],
         debug=hparams.debug,
