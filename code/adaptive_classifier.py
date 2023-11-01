@@ -27,11 +27,11 @@ else:
 # 192 a1, 384 a2, 576 a3
 
 exp = 0
-alpha_id = 2
+alpha_id = 0
 
-alphas_str = ['1', '15', '2', '3']
-alphas = [1, 1.5, 2, 3]
-inputs = [192, 288, 384, 576]
+alphas_str = ['0.2', '1', '15', '2', '3']
+alphas = [0.2, 1, 1.5, 2, 3]
+inputs = [38, 192, 288, 384, 576]
 
 class ImageClassification(MicroMind):
 
@@ -156,9 +156,9 @@ if __name__ == "__main__":
 
     result = m.test(
         datasets={"test": testloader},
-    )
+    )    
 
-    result["epochs"] = epochs
+    result += " Epochs: " + str(epochs)
 
     with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
         file.write(result)

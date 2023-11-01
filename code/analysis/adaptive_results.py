@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as mcolors
 
 exp = 0
-alpha = 2
+alpha = 1.5
 
 # read folder 
 
@@ -98,10 +98,10 @@ if __name__ == "__main__":
     else:
         alpha_title = str(alpha)
 
-    plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 20 epochs')
+    plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 200 epochs')
     plt.xlabel('Number')
     plt.ylabel('Accuracy')
     plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig("./results/adaptive_vanilla_a" + str(alpha))
+    plt.savefig("./results/adaptive_vanilla_a" + str(alpha).replace(".", "-"))
     plt.show()    

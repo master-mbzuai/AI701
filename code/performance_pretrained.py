@@ -38,7 +38,7 @@ if __name__ == "__main__":
     hparams = parse_arguments()
 
     hparams.output_folder = 'pretrained/a' + str(alpha)
-    hparams.lr = 0.01
+    hparams.lr = 0.001
     hparams.opt = 'adam'
     hparams.momentum = 0.03
     
