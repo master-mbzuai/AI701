@@ -1,0 +1,1 @@
+Testing test_accuracy: 0.46 - test_loss: 2.04;  Epochs: 28

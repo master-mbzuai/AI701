@@ -1,0 +1,63 @@
+BACKBONE
+MACs 202444.0, learnable parameters 0
+====================================================================================================
+Layer (type:depth-idx)                             Output Shape              Param #
+====================================================================================================
+PhiNet                                             [128, 38, 1, 1]           --
+├─ModuleList: 1-1                                  --                        --
+│    └─ZeroPad2d: 2-1                              [128, 3, 33, 33]          --
+│    └─SeparableConv2d: 2-2                        [128, 9, 16, 16]          --
+│    │    └─ModuleList: 3-1                        --                        (72)
+│    └─PhiNetConvBlock: 2-3                        [128, 4, 16, 16]          --
+│    │    └─ModuleList: 3-2                        --                        (143)
+│    └─PhiNetConvBlock: 2-4                        [128, 4, 8, 8]            --
+│    │    └─ModuleList: 3-3                        --                        (704)
+│    └─PhiNetConvBlock: 2-5                        [128, 4, 8, 8]            --
+│    │    └─ModuleList: 3-4                        --                        (704)
+│    │    └─FloatFunctional: 3-5                   --                        --
+│    └─PhiNetConvBlock: 2-6                        [128, 9, 4, 4]            --
+│    │    └─ModuleList: 3-6                        --                        (834)
+│    └─PhiNetConvBlock: 2-7                        [128, 9, 4, 4]            --
+│    │    └─ModuleList: 3-7                        --                        (2,664)
+│    │    └─FloatFunctional: 3-8                   --                        --
+│    └─PhiNetConvBlock: 2-8                        [128, 19, 2, 2]           --
+│    │    └─ModuleList: 3-9                        --                        (3,224)
+│    └─PhiNetConvBlock: 2-9                        [128, 19, 2, 2]           --
+│    │    └─ModuleList: 3-10                       --                        (10,184)
+│    │    └─FloatFunctional: 3-11                  --                        --
+│    └─PhiNetConvBlock: 2-10                       [128, 38, 1, 1]           --
+│    │    └─ModuleList: 3-12                       --                        (12,388)
+====================================================================================================
+Total params: 30,917
+Trainable params: 0
+Non-trainable params: 30,917
+Total mult-adds (M): 27.28
+====================================================================================================
+Input size (MB): 1.57
+Forward/backward pass size (MB): 49.57
+Params size (MB): 0.12
+Estimated Total Size (MB): 51.27
+====================================================================================================
+
+
+CLASSIFIER
+MACs 9906.0, learnable parameters 9830
+==========================================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==========================================================================================
+Sequential                               [10, 100]                 --
+├─AdaptiveAvgPool2d: 1-1                 [10, 38, 1, 1]            --
+├─Flatten: 1-2                           [10, 38]                  --
+├─Linear: 1-3                            [10, 70]                  2,730
+├─Linear: 1-4                            [10, 100]                 7,100
+==========================================================================================
+Total params: 9,830
+Trainable params: 9,830
+Non-trainable params: 0
+Total mult-adds (M): 0.10
+==========================================================================================
+Input size (MB): 0.00
+Forward/backward pass size (MB): 0.01
+Params size (MB): 0.04
+Estimated Total Size (MB): 0.05
+==========================================================================================

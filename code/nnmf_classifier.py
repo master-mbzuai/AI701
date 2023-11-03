@@ -52,7 +52,7 @@ class ImageClassification(MicroMind):
                 nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
-                nn.Linear(in_features=self.input, out_features=self.d),                
+                nn.Linear(in_features=self.input, out_features=self.d),
                 nn.Linear(in_features=self.d, out_features=self.output)
             )
 

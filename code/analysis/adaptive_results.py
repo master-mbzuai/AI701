@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as mcolors
 
 exp = 0
-alpha = 1.5
+alpha = 2
 
 # read folder 
 
@@ -85,6 +85,8 @@ if __name__ == "__main__":
     numbers = [numbers[i] for i in sorted_indices]
     accuracies = [accuracies[i] for i in sorted_indices]
     params = [params[i] for i in sorted_indices]
+    print(params)
+
 
     # Create the scatter plot
     plt.scatter(numbers, accuracies, s=50, alpha=0.5, c=dot_colors, label='Parameters')

@@ -27,7 +27,7 @@ else:
 # 192 a1, 384 a2, 576 a3
 
 exp = 0
-alpha_id = 0
+alpha_id = 3
 
 alphas_str = ['0.2', '1', '15', '2', '3']
 alphas = [0.2, 1, 1.5, 2, 3]
@@ -38,7 +38,7 @@ class ImageClassification(MicroMind):
     # test 1 with n as input vector size and m classes custom d
     # n has to be calculated from the output of the neural network of the feature extractor
 
-    def __init__(self, *args, inner_layer_width = 10, **kwargs):
+    def __init__(self, *args, inner_layer_width = 10, testing=False, path="", **kwargs, ):
         super().__init__(*args, **kwargs)
 
         self.input = inputs[alpha_id]
@@ -47,27 +47,41 @@ class ImageClassification(MicroMind):
 
         self.modules["feature_extractor"] = PhiNet(
             (3, 32, 32), include_top=False, num_classes=100, alpha=alphas[alpha_id]
-        )        
+        )
 
-        # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/a" + alphas_str[alpha_id] + "/exp/baseline.ckpt", map_location=device)["feature_extractor"]        
-        model_dict = {}
-        for k, v in pretrained_dict.items():
-            if "classifier" not in k:
-                model_dict[k] = v
+        if(not testing):
+            # Taking away the classifier from pretrained model
+            pretrained_dict = torch.load("./pretrained/a" + alphas_str[alpha_id] + "/exp/baseline.ckpt", map_location=device)["feature_extractor"]        
+            model_dict = {}
+            for k, v in pretrained_dict.items():
+                if "classifier" not in k:
+                    model_dict[k] = v
 
-        #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)         
+            #loading the new model
+            self.modules["feature_extractor"].load_state_dict(model_dict)         
 
-        self.modules["adaptive_classifier"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Linear(in_features=self.input, out_features=self.d),
-                nn.Linear(in_features=self.d, out_features=self.output)
-            )
-        
-        for x, param in self.modules["feature_extractor"].named_parameters():    
-            param.requires_grad = False
+            self.modules["adaptive_classifier"] = nn.Sequential(
+                    nn.AdaptiveAvgPool2d((1, 1)),
+                    nn.Flatten(),
+                    nn.Linear(in_features=self.input, out_features=self.d),
+                    nn.Linear(in_features=self.d, out_features=self.output)
+                )
+            
+            for x, param in self.modules["feature_extractor"].named_parameters():
+                param.requires_grad = False
+
+        if(testing):
+            if(path==""):
+                raise Exception
+            full_path = path + '/exp/save/'            
+
+            res = os.listdir(full_path)
+            print(res)            
+
+            #loading the new model
+            self.modules["feature_extractor"].load_state_dict(torch.load(full_path + res[0], map_location=device)["feature_extractor"])
+            self.modules["adaptive_classifier"].load_state_dict(torch.load(full_path + res[0], map_location=device)["adaptive_classifier"])                        
+            
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
@@ -145,18 +159,27 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
-    epochs = 200
+    epochs = 28
+
+    # m.train(
+    #     epochs=epochs,
+    #     datasets={"train": trainloader, "val": testloader, "test": testloader},
+    #     metrics=[acc],
+    #     debug=hparams.debug,
+    # )
+
+    m = ImageClassification(hparams, inner_layer_width = d,path = hparams.output_folder)    
 
     m.train(
-        epochs=epochs,
+        epochs=1,
         datasets={"train": trainloader, "val": testloader, "test": testloader},
         metrics=[acc],
         debug=hparams.debug,
     )
 
     result = m.test(
-        datasets={"test": testloader},
-    )    
+        datasets={"test": testloader}        
+    )
 
     result += " Epochs: " + str(epochs)
 

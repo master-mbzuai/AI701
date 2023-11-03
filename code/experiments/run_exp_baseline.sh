@@ -1,0 +1,1 @@
+xterm -e "python baseline_classifier.py ; exit" &  
