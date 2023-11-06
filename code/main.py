@@ -12,7 +12,7 @@ import numpy as np
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
-from .models.model_adaptive_class import ImageClassification
+from model_adaptive_class import ImageClassification
 
 #module = importlib.import_module(module_name)
 #ImageClassification = getattr(module, "ImageClassification")
