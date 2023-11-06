@@ -1,4 +1,0 @@
-1000_epochs_baseline
-
-Pretrained - classic classifier (50 epochs)-> Testing test_accuracy: 0.26 - test_loss: 4.01;
-Pretrained - adaptive classifier (50 epochs) -> Testing test_accuracy: 0.22 - test_loss: 3.45;
