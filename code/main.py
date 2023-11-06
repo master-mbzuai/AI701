@@ -102,7 +102,7 @@ if __name__ == "__main__":
     
     ## datasets loads
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), transforms.RandomResizedCrop(32)]
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), transforms.RandomResizedCrop(32, antialias=True)]
     )
     trainset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=True, download=True, transform=transform
