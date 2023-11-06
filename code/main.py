@@ -102,7 +102,7 @@ if __name__ == "__main__":
     
     ## datasets loads
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), transforms.RandomResizedCrop(32)]
     )
     trainset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=True, download=True, transform=transform
@@ -147,6 +147,12 @@ if __name__ == "__main__":
     print("Testset size: ", len(testset)//batch_size)
 
     save_parameters(m, hparams.output_folder)    
+
+    # loss_function = nn.CrossEntropyLoss()
+    # optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
+    # train_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=settings.MILESTONES, gamma=0.2) #learning rate decay
+    # iter_per_epoch = len(cifar100_training_loader)
+    # warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
