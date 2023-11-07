@@ -47,7 +47,7 @@ def START_seed():
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True\
+    torch.backends.cudnn.deterministic = True
 
 def seed_worker(worker_id):
     worker_seed = torch.initial_seed() % 2**32
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     START_seed()  
 
     hparams = parse_arguments()  
-    hparams.lr = 0.01
+    hparams.lr = 0.0001
     d = int(hparams.d)
     hparams.output_folder = 'results/adaptive_exp/a' + alphas_str[alpha_id] + '/'+str(exp)+'/' + str(d) + '/'
     print("Running experiment with d = {}".format(d))        
@@ -103,6 +103,7 @@ if __name__ == "__main__":
     ## datasets loads
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        #upscale
     )
     trainset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=True, download=True, transform=transform
@@ -173,3 +174,9 @@ if __name__ == "__main__":
 
     with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
         file.write(result)
+
+
+### TODO
+
+# upscale images before feeding
+# train from scratch
