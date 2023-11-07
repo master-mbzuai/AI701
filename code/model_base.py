@@ -40,7 +40,7 @@ class ImageClassification(MicroMind):
             (3, 32, 32), include_top=False, num_classes=100, alpha=alphas[alpha_id]
         )        
 
-                # Taking away the classifier from pretrained model
+        # Taking away the classifier from pretrained model
         pretrained_dict = torch.load("./pretrained/1000_epochs_baseline.ckpt", map_location=device)["feature_extractor"]        
         model_dict = {}
         for k, v in pretrained_dict.items():

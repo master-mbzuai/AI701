@@ -39,21 +39,7 @@ alphas = [0.2, 1, 1.5, 2, 3]
 # input sizes for the different alpha values
 inputs = [38, 192, 288, 384, 576]
 
-def START_seed():
-    seed = 9
-    torch.manual_seed(seed)
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
 
-def seed_worker(worker_id):
-    worker_seed = torch.initial_seed() % 2**32
-    np.random.seed(worker_seed)
-    random.seed(worker_seed)
-    
 def save_parameters(model, path):
 
     input = (3, 32, 32)
@@ -83,16 +69,12 @@ def save_parameters(model, path):
     
 if __name__ == "__main__":  
 
-    START_seed()  
 
     hparams = parse_arguments()  
     hparams.lr = 0.0001
     d = int(hparams.d)
     hparams.output_folder = 'results/adaptive_exp/a' + alphas_str[alpha_id] + '/'+str(exp)+'/' + str(d) + '/'
     print("Running experiment with d = {}".format(d))        
-
-    g = torch.Generator()
-    g.manual_seed(0)
 
     m = ImageClassification(hparams, inner_layer_width = d)    
 
@@ -121,22 +103,16 @@ if __name__ == "__main__":
         train, batch_size=batch_size, 
         shuffle=True, 
         num_workers=8, 
-        worker_init_fn=seed_worker,
-        generator=g,
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
         num_workers=8, 
-        worker_init_fn=seed_worker,
-        generator=g,
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8, 
-        worker_init_fn=seed_worker,
-        generator=g,
+        num_workers=8
     )
 
     # train_loader.to(device)

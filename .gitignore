@@ -3,6 +3,6 @@ micromind/*
 output_onnx/
 code/results_0/
 code/results/*
-code/pretrained_0/
+code/pretrained/
 code/results_test_bad/*
 code/logs/*
