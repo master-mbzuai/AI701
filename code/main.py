@@ -12,34 +12,31 @@ import numpy as np
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
-from model_adaptive_class import ImageClassification
+from model_original_pre import ImageClassification
 
-#module = importlib.import_module(module_name)
-#ImageClassification = getattr(module, "ImageClassification")
+import importlib
 
 import os
 
 batch_size = 128
 
-if torch.cuda.is_available():
-    device = torch.device("cuda:0")
-    print("Running on the GPU")
-elif torch.backends.mps.is_available: 
-    device = torch.device("mps")
-    print("Running on the MPS")
-else:
-    device = torch.device("cpu")
-    print("Running on the CPU")
+print("hey")
 
-exp = 0
-alpha_id = 0
+def START_seed():
+    seed = 9
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
-alphas_str = ['0.2', '1', '15', '2', '3']
-alphas = [0.2, 1, 1.5, 2, 3]
-# input sizes for the different alpha values
-inputs = [38, 192, 288, 384, 576]
-
-
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
+    
 def save_parameters(model, path):
 
     input = (3, 32, 32)
@@ -49,9 +46,9 @@ def save_parameters(model, path):
     print(summary_backbone)
 
     input = (model.input, 1, 1)
-    macs_classifier, params_classifier = get_model_complexity_info(model.modules["adaptive_classifier"], input, as_strings=False,
+    macs_classifier, params_classifier = get_model_complexity_info(model.modules["original_classifier"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)        
-    summary_classifier = summary(model.modules["adaptive_classifier"], input_size=(10, model.input, 1, 1))    
+    summary_classifier = summary(model.modules["original_classifier"], input_size=(10, model.input, 1, 1))    
 
     output = "BACKBONE\n" 
     output += "MACs {}, learnable parameters {}\n".format(macs_backbone, params_backbone)
@@ -69,14 +66,21 @@ def save_parameters(model, path):
     
 if __name__ == "__main__":  
 
+   # START_seed()  
 
     hparams = parse_arguments()  
     hparams.lr = 0.0001
-    d = int(hparams.d)
-    hparams.output_folder = 'results/adaptive_exp/a' + alphas_str[alpha_id] + '/'+str(exp)+'/' + str(d) + '/'
-    print("Running experiment with d = {}".format(d))        
 
-    m = ImageClassification(hparams, inner_layer_width = d)    
+    hparams.output_folder = 'results/' + hparams.experiment_name + '/' + str(hparams.d) + '/'
+    print("Running experiment with {}".format(hparams.d))
+
+    # module = importlib.import_module(hparams.model_name)
+    # ImageClassification = getattr(module, "ImageClassification") 
+
+    # g = torch.Generator()
+    # g.manual_seed(0)
+
+    m = ImageClassification(hparams)
 
     def compute_accuracy(pred, batch):
         tmp = (pred.argmax(1) == batch[1]).float()
@@ -84,8 +88,7 @@ if __name__ == "__main__":
     
     ## datasets loads
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-        #upscale
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), transforms.Resize((160, 160), antialias=True)] 
     )
     trainset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=True, download=True, transform=transform
@@ -102,34 +105,27 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         train, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=8, 
+        num_workers=4, 
+
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8, 
+        num_workers=4, 
+
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8
-    )
+        num_workers=1, 
 
-    # train_loader.to(device)
-    # val_loader.to(device)
-    # test_loader.to(device)
+    )
 
     print("Trainset size: ", len(train)//batch_size)
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    save_parameters(m, hparams.output_folder)    
-
-    # loss_function = nn.CrossEntropyLoss()
-    # optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
-    # train_scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=settings.MILESTONES, gamma=0.2) #learning rate decay
-    # iter_per_epoch = len(cifar100_training_loader)
-    # warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
+    # save_parameters(m, hparams.output_folder)    
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
@@ -154,5 +150,4 @@ if __name__ == "__main__":
 
 ### TODO
 
-# upscale images before feeding
 # train from scratch
