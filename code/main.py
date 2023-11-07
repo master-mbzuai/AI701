@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
+from torchvision.transforms import v2
+from torch.utils.data import default_collate
 
 import random
 import numpy as np
@@ -19,8 +21,6 @@ import importlib
 import os
 
 batch_size = 128
-
-print("hey")
 
 def START_seed():
     seed = 9
@@ -100,18 +100,25 @@ if __name__ == "__main__":
     )
     testset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=False, download=True, transform=transform
-    )
-    
+    )        
+
     ## split into train, val, test 
     val_size = int(0.1 * len(trainset))
     train_size = len(trainset) - val_size
     train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
 
+    cutmix = v2.CutMix(num_classes=100, alpha=0.5)
+    mixup = v2.MixUp(num_classes=100, alpha=0.5)
+    cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
+
+    def collate_fn(batch):
+        return cutmix_or_mixup(*default_collate(batch))
+
     train_loader = torch.utils.data.DataLoader(
         train, batch_size=batch_size, 
         shuffle=True, 
         num_workers=4, 
-
+        collate_fn=collate_fn
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
