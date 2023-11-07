@@ -69,7 +69,7 @@ if __name__ == "__main__":
    # START_seed()  
 
     hparams = parse_arguments()  
-    hparams.lr = 0.0001
+    hparams.lr = 0.00001
 
     hparams.output_folder = 'results/' + hparams.experiment_name + '/' + str(hparams.d) + '/'
     print("Running experiment with {}".format(hparams.d))
