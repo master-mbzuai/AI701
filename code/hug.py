@@ -70,9 +70,8 @@ if __name__ == "__main__":
 
     hparams = parse_arguments()  
     hparams.lr = 0.0001
-    d = int(hparams.d)
     #hparams.output_folder = 'results/adaptive_exp/a' + alphas_str[alpha_id] + '/'+str(exp)+'/' + str(d) + '/'
-    print("Running experiment with d = {}".format(d))       
+    print("Running experiment with")       
 
     # module = importlib.import_module(hparams.model_name)
     # ImageClassification = getattr(module, "ImageClassification") 
