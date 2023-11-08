@@ -70,32 +70,31 @@ def train_model(queue, DEVICE, hparams):
         #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='red')
         #     cprint(f'RANK: {rank} | BIAS: {model.fc1.bias}', color='red') 
 
-    print("Running experiment with {}".format(hparams.d))    
+        print("Running experiment with {}".format(hparams.d))    
 
-    def compute_accuracy(pred, batch):
-        tmp = (pred.argmax(1) == batch[1]).float()
-        return tmp    
+        def compute_accuracy(pred, batch):
+            tmp = (pred.argmax(1) == batch[1]).float()
+            return tmp
 
+        acc = Metric(name="accuracy", fn=compute_accuracy)    
 
-    acc = Metric(name="accuracy", fn=compute_accuracy)    
+        epochs = hparams.epochs
 
-    epochs = hparams.epochs
+        model.train(
+            epochs=epochs,
+            datasets={"train": train_loader, "val": val_loader},
+            metrics=[acc],
+            debug=hparams.debug,
+        )
 
-    model.train(
-        epochs=epochs,
-        datasets={"train": train_loader, "val": val_loader},
-        metrics=[acc],
-        debug=hparams.debug,
-    )
+        result = model.test(
+            datasets={"test": test_loader},
+        )    
 
-    result = model.test(
-        datasets={"test": test_loader},
-    )    
+        result += " Epochs: " + str(epochs)
 
-    result += " Epochs: " + str(epochs)
-
-    with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
-        file.write(result)
+        with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
+            file.write(result)
 
 
 NUM_MODEL_COPIES = 10
