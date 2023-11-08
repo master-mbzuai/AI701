@@ -42,59 +42,59 @@ def train_model(queue, DEVICE, hparams):
     train_loader, val_loader, test_loader = queue.get()   
 
     # Set the device to the current process's device
-    with torch.no_grad():
-        model = ImageClassification(hparams, inner_layer_width=hparams.d).modules.to(DEVICE)
+    # with torch.no_grad():
+    model = ImageClassification(hparams, inner_layer_width=hparams.d).modules.to(DEVICE)
 
-        # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load(model_path, map_location=DEVICE)
-        model_dict = {}
-        for k, v in pretrained_dict.items():
-            if "classifier" not in k:
-                model_dict[k] = v
+    # Taking away the classifier from pretrained model
+    pretrained_dict = torch.load(model_path, map_location=DEVICE)
+    model_dict = {}
+    for k, v in pretrained_dict.items():
+        if "classifier" not in k:
+            model_dict[k] = v
 
-        #loading the new model
-        model.feature_extractor.load_state_dict(model_dict)
-        for _, param in model.feature_extractor.named_parameters():
-            param.requires_grad = False
+    #loading the new model
+    model.feature_extractor.load_state_dict(model_dict)
+    for _, param in model.feature_extractor.named_parameters():
+        param.requires_grad = False
 
-        # if rank == 0:
-        #     # changing weight in one model in a separate process doesn't affect the weights in the model in another process, because the weight tensors are not shared
-        #     model.fc1.weight[0][0] = -33.0
+    # if rank == 0:
+    #     # changing weight in one model in a separate process doesn't affect the weights in the model in another process, because the weight tensors are not shared
+    #     model.fc1.weight[0][0] = -33.0
 
-        #     # but changing bias (which is a shared tensor) should affect biases in the other processes
-        #     model.fc1.bias *= 4
+    #     # but changing bias (which is a shared tensor) should affect biases in the other processes
+    #     model.fc1.bias *= 4
 
-        #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='magenta')
+    #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='magenta')
 
-        # if rank == 8:
-        #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='red')
-        #     cprint(f'RANK: {rank} | BIAS: {model.fc1.bias}', color='red') 
+    # if rank == 8:
+    #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='red')
+    #     cprint(f'RANK: {rank} | BIAS: {model.fc1.bias}', color='red') 
 
-        print("Running experiment with {}".format(hparams.d))    
+    print("Running experiment with {}".format(hparams.d))    
 
-        def compute_accuracy(pred, batch):
-            tmp = (pred.argmax(1) == batch[1]).float()
-            return tmp
+    def compute_accuracy(pred, batch):
+        tmp = (pred.argmax(1) == batch[1]).float()
+        return tmp
 
-        acc = Metric(name="accuracy", fn=compute_accuracy)    
+    acc = Metric(name="accuracy", fn=compute_accuracy)    
 
-        epochs = hparams.epochs
+    epochs = hparams.epochs
 
-        model.train(
-            epochs=epochs,
-            datasets={"train": train_loader, "val": val_loader},
-            metrics=[acc],
-            debug=hparams.debug,
-        )
+    model.train(
+        epochs=epochs,
+        datasets={"train": train_loader, "val": val_loader},
+        metrics=[acc],
+        debug=hparams.debug,
+    )
 
-        result = model.test(
-            datasets={"test": test_loader},
-        )    
+    result = model.test(
+        datasets={"test": test_loader},
+    )    
 
-        result += " Epochs: " + str(epochs)
+    result += " Epochs: " + str(epochs)
 
-        with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
-            file.write(result)
+    with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
+        file.write(result)
 
 
 NUM_MODEL_COPIES = 10
