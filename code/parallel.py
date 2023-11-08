@@ -34,7 +34,6 @@ model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pr
 
 queue = mp.Queue()
 
-
 # Define a function to train a single copy of the model
 def train_model(queue, DEVICE, hparams):
     # Set the random seed for reproducibility
@@ -44,7 +43,7 @@ def train_model(queue, DEVICE, hparams):
 
     # Set the device to the current process's device
     with torch.no_grad():
-        model = ImageClassification(hparams, inner_layer_width=hparams.d).modules.to(DEVICE)        
+        model = ImageClassification(hparams, inner_layer_width=hparams.d).modules.to(DEVICE)
 
         # Taking away the classifier from pretrained model
         pretrained_dict = torch.load(model_path, map_location=DEVICE)
@@ -54,7 +53,7 @@ def train_model(queue, DEVICE, hparams):
                 model_dict[k] = v
 
         #loading the new model
-        model.modules["feature_extractor"].load_state_dict(model_dict)
+        model.feature_extractor.load_state_dict(model_dict)
         for _, param in model.modules["feature_extractor"].named_parameters():
             param.requires_grad = False
 
