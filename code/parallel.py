@@ -53,9 +53,9 @@ def train_model(queue, DEVICE, hparams):
             model_dict[k] = v
 
     #loading the new model
-    model.feature_extractor.load_state_dict(model_dict)
-    for _, param in model.feature_extractor.named_parameters():
-        param.requires_grad = False
+    # model.feature_extractor.load_state_dict(model_dict)
+    # for _, param in model.feature_extractor.named_parameters():
+    #     param.requires_grad = False
 
     # if rank == 0:
     #     # changing weight in one model in a separate process doesn't affect the weights in the model in another process, because the weight tensors are not shared
