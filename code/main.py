@@ -114,7 +114,7 @@ if __name__ == "__main__":
         train, batch_size=batch_size, 
         shuffle=True, 
         num_workers=8, 
-        worker_init=seed_worker,
+        worker_init_fn=seed_worker,
         generator=g
         #collate_fn=collate_fn,
     )
@@ -122,14 +122,14 @@ if __name__ == "__main__":
         val, batch_size=batch_size, 
         shuffle=False, 
         num_workers=8, 
-        worker_init=seed_worker,
+        worker_init_fn=seed_worker,
         generator=g
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
         num_workers=1,
-        worker_init=seed_worker,
+        worker_init_fn=seed_worker,
         generator=g
     )
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
-    epochs = 100
+    epochs = hparams.epochs
 
     m.train(
         epochs=epochs,
@@ -158,8 +158,3 @@ if __name__ == "__main__":
 
     with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
         file.write(result)
-
-
-### TODO
-
-# train from scratch
