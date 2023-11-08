@@ -11,7 +11,6 @@ REPO_ID = "micromind/ImageNet"
 FILENAME = "v7/state_dict.pth.tar"
 
 model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
-print(model_path)
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -68,10 +67,7 @@ class ImageClassification(MicroMind):
                 nn.Flatten(),
                 nn.Dropout(0.5),
                 nn.Linear(in_features=self.input, out_features=self.output),
-            )
-
-        #loading the new model
-        #self.modules["feature_extractor"].load_state_dict(torch.load(model_path))        
+            )    
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])  
@@ -80,3 +76,26 @@ class ImageClassification(MicroMind):
 
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
+    
+    def configure_optimizers(self):
+        """Configures and defines the optimizer for the task. Defaults to adam
+        with lr=0.001; It can be overwritten by either passing arguments from the
+        command line, or by overwriting this entire method.
+
+        Returns
+        ---------
+            Optimizer and learning rate scheduler
+            (not implemented yet). : Tuple[torch.optim.Adam, None]
+
+        """
+
+        assert self.hparams.opt in [
+            "adam",
+            "sgd",
+        ], f"Optimizer {self.hparams.opt} not supported."
+        if self.hparams.opt == "adam":
+            opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
+            sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=10, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
+        elif self.hparams.opt == "sgd":
+            opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
+        return opt, sched  # None is for learning rate sched

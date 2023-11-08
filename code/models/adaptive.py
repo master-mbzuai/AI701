@@ -4,16 +4,13 @@ from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
-import torchvision
-import torchvision.transforms as transforms
 
-exp = 0
-alpha_id = 0
+from huggingface_hub import hf_hub_download
 
-alphas_str = ['0.2', '1', '15', '2', '3']
-alphas = [0.2, 1, 1.5, 2, 3]
-# input sizes for the different alpha values
-inputs = [38, 192, 288, 384, 576]
+REPO_ID = "micromind/ImageNet"
+FILENAME = "v7/state_dict.pth.tar"
+
+model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -25,7 +22,6 @@ else:
     device = torch.device("cpu")
     print("Running on the CPU")
 
-
 class ImageClassification(MicroMind):
 
     # test 1 with n as input vector size and m classes custom d
@@ -34,27 +30,44 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = inputs[alpha_id]
-        self.output = 100
+        self.input = 344
+        self.output = 100        
         self.d = inner_layer_width
 
+        # alpha: 0.9
+        # beta: 0.5
+        # num_classes: 1000
+        # num_layers: 7
+        # t_zero: 4.0
+
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False, num_classes=100, alpha=alphas[alpha_id]
-        )        
+            input_shape=(3, 160, 160),
+            alpha=0.9,
+            num_layers=7,
+            beta=0.5,
+            t_zero=4.0,
+            include_top=False,
+            num_classes=1000,
+            compatibility=False,
+            divisor=8,
+            downsampling_layers=[4,5,7]
+        )
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/a" + alphas_str[alpha_id] + "/exp/baseline.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load(model_path, map_location=device)
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
                 model_dict[k] = v
 
         #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)         
+        self.modules["feature_extractor"].load_state_dict(model_dict)
+        self.modules["feature_extractor"].requires_grad = False        
 
         self.modules["adaptive_classifier"] = nn.Sequential(
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
+                nn.Dropout(0.5),
                 nn.Linear(in_features=self.input, out_features=self.d),
                 nn.Linear(in_features=self.d, out_features=self.output)
             )
@@ -69,3 +82,27 @@ class ImageClassification(MicroMind):
 
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
+    
+    def configure_optimizers(self):
+        """Configures and defines the optimizer for the task. Defaults to adam
+        with lr=0.001; It can be overwritten by either passing arguments from the
+        command line, or by overwriting this entire method.
+
+        Returns
+        ---------
+            Optimizer and learning rate scheduler
+            (not implemented yet). : Tuple[torch.optim.Adam, None]
+
+        """
+
+        assert self.hparams.opt in [
+            "adam",
+            "sgd",
+        ], f"Optimizer {self.hparams.opt} not supported."
+        if self.hparams.opt == "adam":
+            opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
+            sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=10, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
+        elif self.hparams.opt == "sgd":
+            opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
+        print("yessir")
+        return opt, sched  # None is for learning rate sched

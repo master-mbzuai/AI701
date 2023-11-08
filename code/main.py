@@ -38,7 +38,7 @@ def save_parameters(model, path):
     macs_backbone, params_backbone = get_model_complexity_info(model.modules["feature_extractor"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)        
     summary_backbone = summary(model.modules["feature_extractor"], input_size=(batch_size, 3, 32, 32))    
-    print(summary_backbone)
+    #print(summary_backbone)
 
     input = (model.input, 1, 1)
     macs_classifier, params_classifier = get_model_complexity_info(model.modules["original_classifier"], input, as_strings=False,
@@ -72,10 +72,9 @@ if __name__ == "__main__":
 
     START_seed()  
 
-    hparams = parse_arguments()  
-    hparams.lr = 0.00001
-
+    hparams = parse_arguments()
     hparams.output_folder = 'results/' + hparams.experiment_name + '/' + str(hparams.d) + '/'
+
     print("Running experiment with {}".format(hparams.d))
 
     module = importlib.import_module("models." + hparams.model_name)
@@ -137,9 +136,9 @@ if __name__ == "__main__":
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    save_parameters(m, hparams.output_folder)    
+    #save_parameters(m, hparams.output_folder)    
 
-    acc = Metric(name="accuracy", fn=compute_accuracy)
+    acc = Metric(name="accuracy", fn=compute_accuracy)    
 
     epochs = hparams.epochs
 
