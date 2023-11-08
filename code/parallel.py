@@ -20,7 +20,14 @@ from torch.utils.data import default_collate
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
-from models.original import ImageClassification
+from models.parallel import ImageClassification
+
+from huggingface_hub import hf_hub_download
+
+REPO_ID = "micromind/ImageNet"
+FILENAME = "v7/state_dict.pth.tar"
+
+model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
 
 # Spawn a separate process for each copy of the model
 # mp.set_start_method('spawn')  # must be not fork, but spawn
@@ -39,6 +46,18 @@ def train_model(queue, DEVICE, hparams):
     with torch.no_grad():
         model = ImageClassification(hparams, inner_layer_width=hparams.d).to(DEVICE)        
 
+        # Taking away the classifier from pretrained model
+        pretrained_dict = torch.load(model_path, map_location=DEVICE)
+        model_dict = {}
+        for k, v in pretrained_dict.items():
+            if "classifier" not in k:
+                model_dict[k] = v
+
+        #loading the new model
+        model.modules["feature_extractor"].load_state_dict(model_dict)
+        for _, param in model.modules["feature_extractor"].named_parameters():
+            param.requires_grad = False
+
         # if rank == 0:
         #     # changing weight in one model in a separate process doesn't affect the weights in the model in another process, because the weight tensors are not shared
         #     model.fc1.weight[0][0] = -33.0
@@ -52,9 +71,7 @@ def train_model(queue, DEVICE, hparams):
         #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='red')
         #     cprint(f'RANK: {rank} | BIAS: {model.fc1.bias}', color='red') 
 
-    print("Running experiment with {}".format(hparams.d))
-
-    m = ImageClassification(hparams)
+    print("Running experiment with {}".format(hparams.d))    
 
     def compute_accuracy(pred, batch):
         tmp = (pred.argmax(1) == batch[1]).float()
