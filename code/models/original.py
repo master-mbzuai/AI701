@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 
 from huggingface_hub import hf_hub_download
-import joblib
 
 REPO_ID = "micromind/ImageNet"
 FILENAME = "v7/state_dict.pth.tar"

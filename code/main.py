@@ -14,7 +14,7 @@ import numpy as np
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
-from model_original_pre import ImageClassification
+from models.original import ImageClassification
 
 import importlib
 
@@ -64,6 +64,15 @@ def save_parameters(model, path):
     with open(path + 'architecture.txt', 'w') as file:
         file.write(output)
     
+# cutmix = v2.CutMix(num_classes=100, alpha=0.5)
+# mixup = v2.MixUp(num_classes=100, alpha=0.5)
+# cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
+
+# def collate_fn(batch):
+#     tmp = cutmix_or_mixup(*default_collate(batch))
+#     res = [x for x in tmp] 
+#     return res
+
 if __name__ == "__main__":  
 
    # START_seed()  
@@ -74,11 +83,11 @@ if __name__ == "__main__":
     hparams.output_folder = 'results/' + hparams.experiment_name + '/' + str(hparams.d) + '/'
     print("Running experiment with {}".format(hparams.d))
 
-    # module = importlib.import_module(hparams.model_name)
-    # ImageClassification = getattr(module, "ImageClassification") 
+    module = importlib.import_module("models." + hparams.model_name)
+    ImageClassification = getattr(module, "ImageClassification") 
 
-    # g = torch.Generator()
-    # g.manual_seed(0)
+    g = torch.Generator()
+    g.manual_seed(0)
 
     m = ImageClassification(hparams)
 
@@ -88,10 +97,11 @@ if __name__ == "__main__":
     
     ## datasets loads
     transform = transforms.Compose(
-        [transforms.ToTensor(), 
+        [
+         transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
          transforms.Resize((160, 160), antialias=True), 
-         transforms.RandomHorizontalFlip(0,5),
+         transforms.RandomHorizontalFlip(0.5),
          transforms.RandomRotation(10)
         ] 
     )
@@ -107,30 +117,22 @@ if __name__ == "__main__":
     train_size = len(trainset) - val_size
     train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
 
-    cutmix = v2.CutMix(num_classes=100, alpha=0.5)
-    mixup = v2.MixUp(num_classes=100, alpha=0.5)
-    cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
-
-    def collate_fn(batch):
-        return cutmix_or_mixup(*default_collate(batch))
-
     train_loader = torch.utils.data.DataLoader(
         train, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=4, 
-        collate_fn=collate_fn
+        num_workers=8, 
+        collate_fn=collate_fn,        
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=4, 
+        num_workers=8, 
 
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
         num_workers=1, 
-
     )
 
     print("Trainset size: ", len(train)//batch_size)
@@ -141,7 +143,7 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
-    epochs = 200
+    epochs = 50
 
     m.train(
         epochs=epochs,

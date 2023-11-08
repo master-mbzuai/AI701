@@ -1,6 +1,8 @@
 code/data/*
 micromind/*
 output_onnx/
+pretrained/
+
 code/results_0/
 code/results/*
 code/pretrained/

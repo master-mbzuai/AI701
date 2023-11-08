@@ -51,7 +51,13 @@ if __name__ == "__main__":
         return tmp
 
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), transforms.RandomResizedCrop(size=(32, 32), antialias=True), torchvision.transforms.RandomRotation(10)]
+        [
+         transforms.ToTensor(), 
+         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
+         transforms.RandomResizedCrop(size=(160, 160), antialias=True), 
+         torchvision.transforms.RandomRotation(10),
+         transforms.RandomHorizontalFlip(0.5),
+        ]
     )
 
     trainset = torchvision.datasets.CIFAR100(
@@ -61,16 +67,16 @@ if __name__ == "__main__":
         root="data/cifar-100", train=False, download=True, transform=transform
     )
 
-    ## split into train, val, test      
-    val_size = 5000
+     ## split into train, val, test 
+    val_size = int(0.1 * len(trainset))
     train_size = len(trainset) - val_size
     train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
 
     trainloader = torch.utils.data.DataLoader(
-        train, batch_size=batch_size, shuffle=True, num_workers=8
+        train, batch_size=batch_size, shuffle=True, num_workers=4
     )
     valloader = torch.utils.data.DataLoader(
-        val, batch_size=batch_size, shuffle=False, num_workers=1
+        val, batch_size=batch_size, shuffle=False, num_workers=4
     )    
     testloader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, shuffle=False, num_workers=1
