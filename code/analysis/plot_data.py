@@ -24,7 +24,7 @@ def extract_metrics(input_string):
 
 
 #path = "../results/augment_01_scheduler/0/augment_01_scheduler/"
-path = "../results/low_learning/0/low_learning/"
+path = "../results/adaptive/90/"
 #open text file in read mode
 #text_file = open("../logs/1000_log.txt", "r")
 text_file = open(path + "train_log.txt", "r")

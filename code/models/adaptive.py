@@ -41,7 +41,7 @@ class ImageClassification(MicroMind):
         # t_zero: 4.0
 
         self.modules["feature_extractor"] = PhiNet(
-            input_shape=(3, 160, 160),
+            input_shape=(3, 240, 240),
             alpha=0.9,
             num_layers=7,
             beta=0.5,
@@ -61,23 +61,21 @@ class ImageClassification(MicroMind):
                 model_dict[k] = v
 
         #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)
-        self.modules["feature_extractor"].requires_grad = False        
-
-        self.modules["adaptive_classifier"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Dropout(0.5),
-                nn.Linear(in_features=self.input, out_features=self.d),
-                nn.Linear(in_features=self.d, out_features=self.output)
-            )
-        
-        for x, param in self.modules["feature_extractor"].named_parameters():    
+        self.modules["feature_extractor"].load_state_dict(model_dict)        
+        for _, param in self.modules["feature_extractor"].named_parameters():    
             param.requires_grad = False
+
+        self.modules["classifier"] = nn.Sequential(                
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),                
+                nn.Linear(in_features=self.input, out_features=self.d),
+                nn.Dropout(p=0.2),
+                nn.Linear(in_features=self.d, out_features=self.output)
+            )                
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
-        x = self.modules["adaptive_classifier"](x)
+        x = self.modules["classifier"](x)
         return x
 
     def compute_loss(self, pred, batch):
@@ -101,7 +99,7 @@ class ImageClassification(MicroMind):
         ], f"Optimizer {self.hparams.opt} not supported."
         if self.hparams.opt == "adam":
             opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
-            sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
+            sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=10, threshold=0.001, threshold_mode='rel', cooldown=2, min_lr=0, eps=1e-08, verbose=True)
         elif self.hparams.opt == "sgd":
             opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
         return opt, sched  # None is for learning rate sched

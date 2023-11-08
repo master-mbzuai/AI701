@@ -43,9 +43,9 @@ def save_parameters(model, hparams):
     #print(summary_backbone)
 
     input = (model.input, 1, 1)
-    macs_classifier, params_classifier = get_model_complexity_info(model.modules["original_classifier"], input, as_strings=False,
+    macs_classifier, params_classifier = get_model_complexity_info(model.modules["classifier"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)        
-    summary_classifier = summary(model.modules["original_classifier"], input_size=(10, model.input, 1, 1))    
+    summary_classifier = summary(model.modules["classifier"], input_size=(10, model.input, 1, 1))    
 
     output = "BACKBONE\n" 
     output += "MACs {}, learnable parameters {}\n".format(macs_backbone, params_backbone)
@@ -53,17 +53,13 @@ def save_parameters(model, hparams):
     output += "\n"*2
     output += "CLASSIFIER\n" 
     output += "MACs {}, learnable parameters {}\n".format(macs_classifier, params_classifier)
-    output += str(summary_classifier)    
-
-    print(path)
+    output += str(summary_classifier)        
 
     if not os.path.exists(path):
         os.makedirs(path)
 
     with open(path + '/architecture.txt', 'w') as file:
-        file.write(output)
-
-    print("ok")
+        file.write(output)    
 
     with open(path + '/meta.txt', 'w') as file:
         file.write(str(hparams))
@@ -93,7 +89,7 @@ if __name__ == "__main__":
     g = torch.Generator()
     g.manual_seed(0)
 
-    m = ImageClassification(hparams)
+    m = ImageClassification(hparams, inner_layer_width = hparams.d)
 
     def compute_accuracy(pred, batch):
         tmp = (pred.argmax(1) == batch[1]).float()
@@ -122,7 +118,7 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         train, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=8, 
+        num_workers=4, 
         worker_init_fn=seed_worker,
         generator=g
         #collate_fn=collate_fn,
@@ -130,7 +126,7 @@ if __name__ == "__main__":
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8, 
+        num_workers=2, 
         worker_init_fn=seed_worker,
         generator=g
     )    
