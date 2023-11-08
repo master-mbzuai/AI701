@@ -106,7 +106,8 @@ DEVICE = 'cuda:0'
 
 hparams = parse_arguments()    
 
-d = [10,25,50,75,90]
+#d = [10,25,50,75,90]
+d = [10]
 
 processes = []
 for rank in d:
