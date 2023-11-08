@@ -94,6 +94,7 @@ d = [10,25,50,75,90]
 
 processes = []
 for rank in d:
+    print("starting process with d = {}".format(rank))
     hparams.d = rank
     hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'  
     process = mp.Process(target=train_model, args=(queue, DEVICE, hparams))
