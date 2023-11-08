@@ -44,7 +44,7 @@ def train_model(queue, DEVICE, hparams):
 
     # Set the device to the current process's device
     with torch.no_grad():
-        model = ImageClassification(hparams, inner_layer_width=hparams.d).to(DEVICE)        
+        model = ImageClassification(hparams, inner_layer_width=hparams.d).modules.to(DEVICE)        
 
         # Taking away the classifier from pretrained model
         pretrained_dict = torch.load(model_path, map_location=DEVICE)
