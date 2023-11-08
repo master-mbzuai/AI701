@@ -1,7 +1,8 @@
-code/data/*
+data/*
 output_onnx/
 pretrained/
 
+code/data/*
 code/results/*
 code/pretrained/
 code/results_test_bad/*
