@@ -32,7 +32,9 @@ def seed_worker(worker_id):
     np.random.seed(worker_seed)
     random.seed(worker_seed)
     
-def save_parameters(model, path):
+def save_parameters(model, hparams):
+
+    path = hparams.output_folder + "/" + hparams.experiment_name
 
     input = (3, 32, 32)
     macs_backbone, params_backbone = get_model_complexity_info(model.modules["feature_extractor"], input, as_strings=False,
@@ -53,11 +55,18 @@ def save_parameters(model, path):
     output += "MACs {}, learnable parameters {}\n".format(macs_classifier, params_classifier)
     output += str(summary_classifier)    
 
+    print(path)
+
     if not os.path.exists(path):
         os.makedirs(path)
 
-    with open(path + 'architecture.txt', 'w') as file:
+    with open(path + '/architecture.txt', 'w') as file:
         file.write(output)
+
+    print("ok")
+
+    with open(path + '/meta.txt', 'w') as file:
+        file.write(str(hparams))
     
 # cutmix = v2.CutMix(num_classes=100, alpha=0.5)
 # mixup = v2.MixUp(num_classes=100, alpha=0.5)
@@ -72,8 +81,9 @@ if __name__ == "__main__":
 
     START_seed()  
 
-    hparams = parse_arguments()
-    hparams.output_folder = 'results/' + hparams.experiment_name + '/' + str(hparams.d) + '/'
+    hparams = parse_arguments()    
+    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'    
+    print(hparams.experiment_name)
 
     print("Running experiment with {}".format(hparams.d))
 
@@ -136,7 +146,7 @@ if __name__ == "__main__":
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    #save_parameters(m, hparams.output_folder)    
+    save_parameters(m, hparams)    
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 

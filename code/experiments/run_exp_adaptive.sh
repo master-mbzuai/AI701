@@ -4,5 +4,5 @@ geometry_settings=("80x24+0+0" "80x24+400+0" "80x24+0+400" "80x24+400+400" "80x2
 cd ..
 for i in "${!args[@]}"; do
   geometry=${geometry_settings[$i % ${#geometry_settings[@]}]}
-  xterm -geometry $geometry -e "python adaptive_classifier.py --d ${args[$i]}; exit" &  
+  xterm -geometry $geometry -e "python main.py --d ${args[$i]} --model_name adaptive --epochs 100 --experiment_name adaptive; exit" &  
 done
