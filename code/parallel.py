@@ -76,9 +76,6 @@ def train_model(queue, DEVICE, hparams):
         tmp = (pred.argmax(1) == batch[1]).float()
         return tmp    
 
-    print("Trainset size: ", len(train)//batch_size)
-    print("Valset size: ", len(val)//batch_size)
-    print("Testset size: ", len(testset)//batch_size)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 
@@ -142,6 +139,10 @@ testset = torchvision.datasets.CIFAR100(
 val_size = int(0.1 * len(trainset))
 train_size = len(trainset) - val_size
 train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
+
+print("Trainset size: ", len(train)//batch_size)
+print("Valset size: ", len(val)//batch_size)
+print("Testset size: ", len(testset)//batch_size)
 
 train_loader = torch.utils.data.DataLoader(
     train, batch_size=batch_size, 
