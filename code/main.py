@@ -7,18 +7,13 @@ import torchvision
 import torchvision.transforms as transforms
 from torchvision.transforms import v2
 from torch.utils.data import default_collate
-
-import random
-import numpy as np
-
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
-from models.original import ImageClassification
-
-import importlib
-
 import os
+import random
+import importlib
+import numpy as np
 
 batch_size = 128
 
@@ -75,7 +70,7 @@ def save_parameters(model, path):
 
 if __name__ == "__main__":  
 
-   # START_seed()  
+    START_seed()  
 
     hparams = parse_arguments()  
     hparams.lr = 0.00001
@@ -94,8 +89,7 @@ if __name__ == "__main__":
     def compute_accuracy(pred, batch):
         tmp = (pred.argmax(1) == batch[1]).float()
         return tmp
-    
-    ## datasets loads
+        
     transform = transforms.Compose(
         [
          transforms.ToTensor(), 
@@ -111,8 +105,7 @@ if __name__ == "__main__":
     testset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=False, download=True, transform=transform
     )        
-
-    ## split into train, val, test 
+    
     val_size = int(0.1 * len(trainset))
     train_size = len(trainset) - val_size
     train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
@@ -121,29 +114,34 @@ if __name__ == "__main__":
         train, batch_size=batch_size, 
         shuffle=True, 
         num_workers=8, 
-        collate_fn=collate_fn,        
+        worker_init=seed_worker,
+        generator=g
+        #collate_fn=collate_fn,
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
         num_workers=8, 
-
+        worker_init=seed_worker,
+        generator=g
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=1, 
+        num_workers=1,
+        worker_init=seed_worker,
+        generator=g
     )
 
     print("Trainset size: ", len(train)//batch_size)
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    # save_parameters(m, hparams.output_folder)    
+    save_parameters(m, hparams.output_folder)    
 
     acc = Metric(name="accuracy", fn=compute_accuracy)
 
-    epochs = 50
+    epochs = 100
 
     m.train(
         epochs=epochs,
