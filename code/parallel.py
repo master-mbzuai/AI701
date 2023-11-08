@@ -54,7 +54,7 @@ def train_model(queue, DEVICE, hparams):
 
         #loading the new model
         model.feature_extractor.load_state_dict(model_dict)
-        for _, param in model.modules["feature_extractor"].named_parameters():
+        for _, param in model.feature_extractor.named_parameters():
             param.requires_grad = False
 
         # if rank == 0:
@@ -84,14 +84,14 @@ def train_model(queue, DEVICE, hparams):
 
     epochs = hparams.epochs
 
-    m.train(
+    model.train(
         epochs=epochs,
         datasets={"train": train_loader, "val": val_loader},
         metrics=[acc],
         debug=hparams.debug,
     )
 
-    result = m.test(
+    result = model.test(
         datasets={"test": test_loader},
     )    
 
