@@ -105,4 +105,4 @@ if __name__ == "__main__":
     plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
     plt.savefig("../results/adaptive/image.jpg")
-    plt.show()    
+    #plt.show()    
