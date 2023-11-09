@@ -5,8 +5,6 @@ import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
-from torchvision.transforms import v2
-from torch.utils.data import default_collate
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
@@ -14,6 +12,8 @@ import os
 import random
 import importlib
 import numpy as np
+
+from models.original import ImageClassification
 
 batch_size = 128
 
@@ -63,31 +63,21 @@ def save_parameters(model, hparams):
 
     with open(path + '/meta.txt', 'w') as file:
         file.write(str(hparams))
-    
-# cutmix = v2.CutMix(num_classes=100, alpha=0.5)
-# mixup = v2.MixUp(num_classes=100, alpha=0.5)
-# cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
-
-# def collate_fn(batch):
-#     tmp = cutmix_or_mixup(*default_collate(batch))
-#     res = [x for x in tmp] 
-#     return res
 
 if __name__ == "__main__":  
 
     START_seed()  
-
+    
     hparams = parse_arguments()    
-    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'    
+    hparams.d = 0 
+    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'   
+    d = 0
     print(hparams.experiment_name)
 
     print("Running experiment with {}".format(hparams.d))
 
-    module = importlib.import_module("models." + hparams.model_name)
-    ImageClassification = getattr(module, "ImageClassification") 
-
-    g = torch.Generator()
-    g.manual_seed(0)
+    # module = importlib.import_module("models." + hparams.model_name)
+    # ImageClassification = getattr(module, "ImageClassification")     
 
     m = ImageClassification(hparams, inner_layer_width = hparams.d)
 
@@ -100,8 +90,8 @@ if __name__ == "__main__":
          transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
          transforms.Resize((160, 160), antialias=True), 
-         transforms.RandomHorizontalFlip(0.5),
-         transforms.RandomRotation(10)
+        #  transforms.RandomHorizontalFlip(0.5),
+        #  transforms.RandomRotation(10)
         ] 
     )
     trainset = torchvision.datasets.CIFAR100(
@@ -119,23 +109,20 @@ if __name__ == "__main__":
         train, batch_size=batch_size, 
         shuffle=True, 
         num_workers=4, 
-        worker_init_fn=seed_worker,
-        generator=g
+
         #collate_fn=collate_fn,
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
         num_workers=2, 
-        worker_init_fn=seed_worker,
-        generator=g
+
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
         num_workers=1,
-        worker_init_fn=seed_worker,
-        generator=g
+
     )
 
     print("Trainset size: ", len(train)//batch_size)
@@ -146,7 +133,7 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 
-    epochs = hparams.epochs
+    epochs = 50 
 
     m.train(
         epochs=epochs,
@@ -161,5 +148,5 @@ if __name__ == "__main__":
 
     result += " Epochs: " + str(epochs)
 
-    with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
+    with open(hparams.output_folder + "/" + hparams.experiment_name+ '/test_set_result.txt', 'w') as file:
         file.write(result)

@@ -46,11 +46,12 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_exp/a" + str(alpha) + "/" + str(exp) + "/"
+    path = "../results/adaptive/"
 
     for folder in os.listdir(path):        
         results[folder] = {}
-        for exp in os.listdir(path + folder):                     
+        for exp in os.listdir(path + folder):       
+            print(exp)              
             if("architecture.txt" == exp):
                 meta = read_architecture(path + folder + "/" + exp)                
                 results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
@@ -103,5 +104,5 @@ if __name__ == "__main__":
     plt.ylabel('Accuracy')
     plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig("./results/adaptive_vanilla_a" + str(alpha).replace(".", "-"))
+    plt.savefig("../results/adaptive/image.jpg")
     plt.show()    
