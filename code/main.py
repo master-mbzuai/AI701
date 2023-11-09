@@ -13,8 +13,6 @@ import random
 import importlib
 import numpy as np
 
-from models.original import ImageClassification
-
 batch_size = 128
 
 def START_seed():
@@ -76,8 +74,8 @@ if __name__ == "__main__":
 
     print("Running experiment with {}".format(hparams.d))
 
-    # module = importlib.import_module("models." + hparams.model_name)
-    # ImageClassification = getattr(module, "ImageClassification")     
+    module = importlib.import_module("models." + hparams.model_name)
+    ImageClassification = getattr(module, "ImageClassification")     
 
     m = ImageClassification(hparams, inner_layer_width = hparams.d)
 
@@ -90,8 +88,8 @@ if __name__ == "__main__":
          transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
          transforms.Resize((160, 160), antialias=True), 
-        #  transforms.RandomHorizontalFlip(0.5),
-        #  transforms.RandomRotation(10)
+         transforms.RandomHorizontalFlip(0.5),
+         transforms.RandomRotation(10)
         ] 
     )
     trainset = torchvision.datasets.CIFAR100(
@@ -109,8 +107,6 @@ if __name__ == "__main__":
         train, batch_size=batch_size, 
         shuffle=True, 
         num_workers=4, 
-
-        #collate_fn=collate_fn,
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
@@ -122,7 +118,6 @@ if __name__ == "__main__":
         testset, batch_size=batch_size, 
         shuffle=False, 
         num_workers=1,
-
     )
 
     print("Trainset size: ", len(train)//batch_size)
@@ -133,7 +128,7 @@ if __name__ == "__main__":
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 
-    epochs = 50 
+    epochs = hparams.epochs 
 
     m.train(
         epochs=epochs,
