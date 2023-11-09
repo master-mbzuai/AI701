@@ -33,7 +33,7 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 10                
 
-        self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input))
+        self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)        
 
         # alpha: 0.9
         # beta: 0.5
@@ -63,22 +63,31 @@ class ImageClassification(MicroMind):
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(model_dict)        
-        for _, param in self.modules["feature_extractor"].named_parameters():    
-            param.requires_grad = False 
+        # for _, param in self.modules["feature_extractor"].named_parameters():    
+        #     param.requires_grad = False 
+
+        self.modules["flattener"] = nn.Sequential(
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),                   
+        )
 
         self.modules["classifier"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Linear(in_features=self.input, out_features=self.output),                
-            )
+            nn.Linear(in_features=self.input, out_features=self.output)    
+        )
 
     def forward(self, batch):
-        x = self.modules["feature_extractor"](batch[0])        
-        indexes = torch.argmax(self.modules["classifier"](x), dim=1)
-        print(indexes)
-        x = x + self.modifier_bias[indexes, :]
-        x = self.modules["classifier"](x)
-        return x
+        features_vector = self.modules["feature_extractor"](batch[0])    
+        features_vector = self.modules["flattener"](features_vector)            
+        x = self.modules["classifier"](features_vector)
+
+        indexes = torch.argmax(x, dim=1)  
+        biases = torch.stack([self.modifier_bias[i] for i in indexes])
+
+        stacked_x = features_vector + biases
+
+        x_2 = self.modules["classifier"](stacked_x)
+        
+        return x_2
 
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
