@@ -12,6 +12,7 @@ from torch.autograd import Variable
 # make_dot was moved to https://github.com/szagoruyko/pytorchviz
 from torchviz import make_dot
 
+
 from huggingface_hub import hf_hub_download
 
 REPO_ID = "micromind/ImageNet"
@@ -38,7 +39,7 @@ class ImageClassification(MicroMind):
         super().__init__(*args, **kwargs)
 
         self.input = 344
-        self.output = 10                
+        self.output = 10
 
         self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)        
 
@@ -49,7 +50,7 @@ class ImageClassification(MicroMind):
         # t_zero: 4.0
 
         self.modules["feature_extractor"] = PhiNet(
-            input_shape=(3, 160, 160),
+            input_shape=(3, 240, 240),
             alpha=0.9,
             num_layers=7,
             beta=0.5,
@@ -70,77 +71,21 @@ class ImageClassification(MicroMind):
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(model_dict)        
-        # for _, param in self.modules["feature_extractor"].named_parameters():    
-        #     param.requires_grad = False 
-
-        self.modules["flattener"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),                   
-        )
+        for _, param in self.modules["feature_extractor"].named_parameters():    
+            param.requires_grad = False 
 
         self.modules["classifier"] = nn.Sequential(
-            nn.Linear(in_features=self.input, out_features=self.output)    
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),                 
+                nn.Linear(in_features=self.input, out_features=self.output)      
         )
 
     def forward(self, batch):     
 
-        feature_vector = self.modules["feature_extractor"](batch[0])    
-        feature_vector = self.modules["flattener"](feature_vector)            
+        feature_vector = self.modules["feature_extractor"](batch[0])                      
         x = self.modules["classifier"](feature_vector)
-
-        #print(len(batch[0]))
-
-        broadcasted_bias = self.modifier_bias.unsqueeze(0).expand(len(batch[0]),-1,-1)
-
-        out_expanded = x.unsqueeze(2)
-
-        result = out_expanded * broadcasted_bias
-
-        result_summed = result.sum(dim=1)
-
-        # maybe we don't even need to add them?
-        modified_feature_vector = feature_vector + result_summed
-
-        x_2 = self.modules["classifier"](modified_feature_vector)        
-        
-        output_tensor = torch.zeros(len(batch[0]), 100, device=device)
-
-        indexes = torch.argmax(x, dim=1)
-
-        # Calculate the ranges using vectorized operations
-        start = indexes * 10
-        end = (indexes + 1) * 10
-
-        # Use 'torch.arange' and 'torch.stack' for creating the sequence tensors
-        to_add = torch.stack([torch.arange(start[i], end[i], device=device) for i in range(len(indexes))])        
-
-        output_tensor.scatter_(1, to_add, x_2)
-        make_dot(output_tensor).render("attached", format="png")
-        
-        return output_tensor
-    
-    """
-    >>> b = torch.zeros((4,10), dtype=a.dtype)
-    >>> b
-    tensor([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-    >>> indexes = torch.tensor([[1,2],[2,3],[3,4],[4,5]]
-    ... )
-    >>> indexes
-    tensor([[1, 2],
-            [2, 3],
-            [3, 4],
-            [4, 5]])
-    >>> values = torch.tensor([[1,1],[2,2],[3,3],[4,4]])
-    >>> b.scatter_(1, indexes, values)
-    tensor([[0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 2, 2, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 3, 3, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 4, 4, 0, 0, 0, 0]])
-    """
-
+        return x
+       
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
     
@@ -162,7 +107,8 @@ class ImageClassification(MicroMind):
         ], f"Optimizer {self.hparams.opt} not supported."
         if self.hparams.opt == "adam":
             opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
-            sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
+            sched = torch.optim.lr_scheduler.StepLR(opt, step_size=20, gamma=0.1)
+            #sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
         elif self.hparams.opt == "sgd":
             opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
         return opt, sched

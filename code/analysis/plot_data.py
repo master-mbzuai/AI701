@@ -1,4 +1,5 @@
 import re
+import os
 from matplotlib import pyplot as plt
 
 def extract_metrics(input_string):
@@ -24,26 +25,35 @@ def extract_metrics(input_string):
 
 
 #path = "../results/augment_01_scheduler/0/augment_01_scheduler/"
-path = "../results/adaptive_lr0.0001_epochs_200/75/"
+path = "../results/hierarchy10_test_freeze/"
 #open text file in read mode
-#text_file = open("../logs/1000_log.txt", "r")
-text_file = open(path + "train_log.txt", "r")
-#text_file = open("../results/adaptive_exp_0/90/exp/train_log.txt", "r")
 
-# Your input string
-#read whole file to a string
-input_string = text_file.read()
 
-# Extract metrics
-extracted_data = extract_metrics(input_string)
+def create_image(path, x):
+    #text_file = open("../logs/1000_log.txt", "r")
+    text_file = open(path + str(x) + "/train_log.txt", "r")
+    #text_file = open("../results/adaptive_exp_0/90/exp/train_log.txt", "r")
 
-# Create the scatter plot
-plt.plot(extracted_data["epoch"], extracted_data["train_loss"], alpha=0.7, c='blue', label='Parameters')
-plt.plot(extracted_data["epoch"], extracted_data["val_loss"], alpha=0.7, c='red', label='Parameters')
+    # Your input string
+    #read whole file to a string
+    input_string = text_file.read()
 
-plt.title('Train loss (blue) VS Validation loss')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.grid(True)
-plt.savefig(path + 'trainloss.jpg')
-plt.show()
+    # Extract metrics
+    extracted_data = extract_metrics(input_string)
+
+    # Create the scatter plot
+    plt.plot(extracted_data["epoch"], extracted_data["train_loss"], alpha=0.7, c='blue', label='Parameters')
+    plt.plot(extracted_data["epoch"], extracted_data["val_loss"], alpha=0.7, c='red', label='Parameters')
+
+    plt.title('Train loss (blue) VS Validation loss - d: ' + x)
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.grid(True)
+    plt.savefig(path + str(x) + '/trainloss.jpg')
+    plt.show()
+
+
+for x in os.listdir(path):
+    print(x)
+    if x in ["0", "10","25","50","75","90"]:
+        create_image(path, x)

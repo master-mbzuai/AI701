@@ -15,7 +15,7 @@ import random
 import importlib
 import numpy as np
 
-batch_size = 64
+batch_size = 128
 
 def START_seed():
     seed = 9
@@ -100,10 +100,10 @@ if __name__ == "__main__":
          transforms.Resize((224, 224), antialias=True),          
         ] 
     )
-    trainset = torchvision.datasets.CIFAR10(
+    trainset = dataset.CIFAR100CUSTOM(
         root="data/cifar-100", train=True, download=True, transform=train_transform
     )
-    testset = torchvision.datasets.CIFAR100(
+    testset = dataset.CIFAR100CUSTOM(
         root="data/cifar-100", train=False, download=True, transform=transform
     )        
     
@@ -114,12 +114,12 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         train, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=4, 
+        num_workers=8, 
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=4, 
+        num_workers=8, 
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 

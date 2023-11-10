@@ -108,5 +108,5 @@ if __name__ == "__main__":
     plt.ylabel('Accuracy')
     plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig("../results/adaptive_lr0.0001_epochs_200/image.jpg")
-    #plt.show()    
+    plt.savefig(path + "image.jpg")
+    plt.show()    
