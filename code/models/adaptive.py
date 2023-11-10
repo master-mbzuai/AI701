@@ -69,7 +69,7 @@ class ImageClassification(MicroMind):
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),                
                 nn.Linear(in_features=self.input, out_features=self.d),
-                nn.Dropout(p=0.2),
+                nn.Dropout(p=0.5),
                 nn.Linear(in_features=self.d, out_features=self.output)
             )                
 
@@ -99,7 +99,7 @@ class ImageClassification(MicroMind):
         ], f"Optimizer {self.hparams.opt} not supported."
         if self.hparams.opt == "adam":
             opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
-            sched = torch.optim.lr_scheduler.StepLR(opt, step_size=30, gamma=0.1)
+            sched = torch.optim.lr_scheduler.StepLR(opt, step_size=20, gamma=0.1)
             #sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.001, threshold_mode='rel', cooldown=2, min_lr=0, eps=1e-08, verbose=True)
         elif self.hparams.opt == "sgd":
             opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)

@@ -86,7 +86,7 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-         transforms.Resize((224, 224), antialias=True), 
+         transforms.Resize((80, 80), antialias=True), 
          transforms.RandomHorizontalFlip(0.5),
          transforms.RandomRotation(10)
         ] 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-         transforms.Resize((224, 224), antialias=True),          
+         transforms.Resize((80, 80), antialias=True),          
         ] 
     )
     trainset = torchvision.datasets.CIFAR100(

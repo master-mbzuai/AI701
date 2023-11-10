@@ -48,9 +48,12 @@ if __name__ == "__main__":
     results = {}
     path = "../results/adaptive_lr0.0001_epochs_200/"
 
-    for folder in os.listdir(path):        
+    for folder in os.listdir(path):      
+
+        print(folder)
+        #folder = [x for x in folder if "." not in x]  
         results[folder] = {}
-        for exp in os.listdir(path + folder):                              
+        for exp in os.listdir(path + folder):
             if("architecture.txt" == exp):
                 meta = read_architecture(path + folder + "/" + exp)                
                 results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                

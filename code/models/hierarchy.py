@@ -5,6 +5,14 @@ from micromind.utils.parse import parse_arguments
 import torch
 import torch.nn as nn
 
+from graphviz import Digraph
+import torch
+from torch.autograd import Variable
+
+# make_dot was moved to https://github.com/szagoruyko/pytorchviz
+from torchviz import make_dot
+
+
 from huggingface_hub import hf_hub_download
 
 REPO_ID = "micromind/ImageNet"
@@ -78,18 +86,39 @@ class ImageClassification(MicroMind):
     def forward(self, batch):
         features_vector = self.modules["feature_extractor"](batch[0])    
         features_vector = self.modules["flattener"](features_vector)            
-        x = self.modules["classifier"](features_vector)
+        x = self.modules["classifier_1"](features_vector)
 
-        indexes = torch.argmax(x, dim=1)  
-        biases = torch.stack([self.modifier_bias[i] for i in indexes])
+        indexes = torch.argmax(x, dim=1)
 
-        stacked_x = features_vector + biases
+        # this is not differentiable cannot use
+        #indexes = torch.argmax(x, dim=1)
 
-        x_2 = self.modules["classifier"](stacked_x)
+        #we need to multiply the probabilities times the biases
+        # I have no Idea how to do this
 
-        #create the output, that has to be the 
+        # it is a weighted matrix multiplication
+
+
+        stacked_x = torch.matmul(x, self.modifier_bias)
+
+        #biases = torch.stack([self.modifier_bias[i] for i in indexes])
+
+        #stacked_x = features_vector + biases
+
+        x_2 = self.modules["classifier_2"](stacked_x)
+
+        #create the output, that has to be the 100 probabilities
+
+        #torch.stack([[x for x in range(index*10 - 1)], x_2, [x for x in range((index+1)*10, 100)]] for index in indexes])        
+
+        #tensors = [torch.tensor([x for x in range(index * 10 - 1, index * 10)] + x_2 + [x for x in range((index + 1) * 10, 100)]) for index in indexes]
+        tensors = [torch.cat([torch.zeros(index * 10).to(device), x_2[index], torch.zeros(90 - ((index) * 10)).to(device)]) for index in indexes]
+
+        stacked_tensor = torch.stack(tensors).to(device)
+
+        make_dot(stacked_tensor).render("attached", format="png")
         
-        return x_2
+        return stacked_tensor
 
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
