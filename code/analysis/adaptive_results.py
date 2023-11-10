@@ -46,12 +46,11 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive/"
+    path = "../results/adaptive_lr0.0001_epochs_200/"
 
     for folder in os.listdir(path):        
         results[folder] = {}
-        for exp in os.listdir(path + folder):       
-            print(exp)              
+        for exp in os.listdir(path + folder):                              
             if("architecture.txt" == exp):
                 meta = read_architecture(path + folder + "/" + exp)                
                 results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
@@ -66,6 +65,8 @@ if __name__ == "__main__":
                 results[folder]["loss"] = loss
 
     data = {k: v for k, v in sorted(results.items(), key=lambda item: item[0], reverse=False)}    
+
+    print(data)
 
     # Extract numbers, accuracies, and parameters from the data
     numbers = [int(key) for key in data.keys()]
@@ -104,5 +105,5 @@ if __name__ == "__main__":
     plt.ylabel('Accuracy')
     plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig("../results/adaptive/image.jpg")
+    plt.savefig("../results/adaptive_lr0.0001_epochs_200/image.jpg")
     #plt.show()    

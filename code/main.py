@@ -105,13 +105,12 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         train, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=1, 
+        num_workers=6, 
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=1, 
-
+        num_workers=4, 
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
@@ -123,7 +122,8 @@ if __name__ == "__main__":
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    #save_parameters(m, hparams)    
+    if(hparams.model_name != "hierarchy"):
+        save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 

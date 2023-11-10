@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--model_name", "hierarchy"]
+            "args": ["--model_name", "hierarchy", "--experiment_name", "hierarchy_test"]
         }
     ]
 }

@@ -1,2 +1,2 @@
 cd ..
-xterm -e "python main.py --model_name original --experiment_name original --epochs 200; exit"
+xterm -e "python main.py --model_name original --experiment_name adaptive_lr0.0001_epochs_200 --epochs 200 --lr 0.0001; exit"

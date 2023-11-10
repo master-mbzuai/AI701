@@ -86,6 +86,8 @@ class ImageClassification(MicroMind):
         stacked_x = features_vector + biases
 
         x_2 = self.modules["classifier"](stacked_x)
+
+        #create the output, that has to be the 
         
         return x_2
 
