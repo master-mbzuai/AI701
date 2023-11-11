@@ -46,7 +46,7 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_lr0.0001_epochs_200/"
+    path = "../results/adaptive_lr0.0001_epochs_100_sched_bigger_images/"
 
     for folder in os.listdir(path):      
 

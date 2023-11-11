@@ -25,7 +25,7 @@ def extract_metrics(input_string):
 
 
 #path = "../results/augment_01_scheduler/0/augment_01_scheduler/"
-path = "../results/hierarchy10_test_freeze/"
+path = "../results/adaptive_50_epochs_01/"
 #open text file in read mode
 
 

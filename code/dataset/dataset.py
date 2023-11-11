@@ -12,13 +12,19 @@ from typing import Any, Callable, Optional, Tuple
 
 from torchvision.datasets.utils import check_integrity
 
+fine_labels = ['apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider', 'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
+
+fine_labels_index = {}
+for i, x in enumerate(fine_labels):
+    fine_labels_index[x] = i
+
 class_hierarchy = {
     "aquatic mammals": ["beaver", "dolphin", "otter", "seal", "whale"],
-    "fish": ["aquarium fish", "flatfish", "ray", "shark", "trout"],
-    "flowers": ["orchids", "poppies", "roses", "sunflowers", "tulips"],
-    "food containers": ["bottles", "bowls", "cans", "cups", "plates"],
-    "fruit and vegetables": ["apples", "mushrooms", "oranges", "pears", "sweet peppers"],
-    "household electrical devices": ["clock", "computer keyboard", "lamp", "telephone", "television"],
+    "fish": ["aquarium_fish", "flatfish", "ray", "shark", "trout"],
+    "flowers": ["orchid", "poppy", "rose", "sunflower", "tulip"],
+    "food containers": ["bottle", "bowl", "can", "cup", "plate"],
+    "fruit and vegetables": ["apple", "mushroom", "orange", "pear", "sweet_pepper"],
+    "household electrical devices": ["clock", "keyboard", "lamp", "telephone", "television"],
     "household furniture": ["bed", "chair", "couch", "table", "wardrobe"],
     "insects": ["bee", "beetle", "butterfly", "caterpillar", "cockroach"],
     "large carnivores": ["bear", "leopard", "lion", "tiger", "wolf"],
@@ -30,9 +36,9 @@ class_hierarchy = {
     "people": ["baby", "boy", "girl", "man", "woman"],
     "reptiles": ["crocodile", "dinosaur", "lizard", "snake", "turtle"],
     "small mammals": ["hamster", "mouse", "rabbit", "shrew", "squirrel"],
-    "trees": ["maple", "oak", "palm", "pine", "willow"],
-    "vehicles 1": ["bicycle", "bus", "motorcycle", "pickup truck", "train"],
-    "vehicles 2": ["lawn-mower", "rocket", "streetcar", "tank", "tractor"]
+    "trees": ["maple_tree", "oak_tree", "palm_tree", "pine_tree", "willow_tree"],
+    "vehicles 1": ["bicycle", "bus", "motorcycle", "pickup_truck", "train"],
+    "vehicles 2": ["lawn_mower", "rocket", "streetcar", "tank", "tractor"]
 }
 
 class_hierarchy_index = {}
@@ -56,6 +62,19 @@ new_class_hierarchy = {
     "vehicles": ["vehicles 1", "vehicles 2"],
     "other": ["people", "reptiles"]
 }
+
+classes_for_parent = {}
+for x in new_class_hierarchy.keys():
+    classes_for_parent[x] = sorted([j for y in new_class_hierarchy[x] for j in class_hierarchy[y]])
+
+classes_for_parent_index = {}
+for i, x in enumerate(classes_for_parent):
+    for j, y in enumerate(classes_for_parent[x]):
+        classes_for_parent_index[y] = (i*10) +j
+
+mapping = {}
+for x in fine_labels_index.keys():
+    mapping[fine_labels_index[x]] = classes_for_parent_index[x]
 
 i = 0
 new_class_hierarchy_index = {}
@@ -84,11 +103,15 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
         download: bool = False,
+        coarse: bool = True
     ) -> None:
+
+        self.coarse = coarse
 
         super().__init__(root, transform=transform, target_transform=target_transform)
 
         self.train = train  # training set or test set
+        
 
         if download:
             self.download()
@@ -109,11 +132,13 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             file_path = os.path.join(self.root, self.base_folder, file_name)
             with open(file_path, "rb") as f:
                 entry = pickle.load(f, encoding="latin1")
-                self.data.append(entry["data"])                
+                self.data.append(entry["data"])
+                #print(entry["fine_labels"])         
 
-                coarse_10 = [parent_10[x] for x in entry["coarse_labels"]]
-
-                self.targets.extend(coarse_10)                
+                if(self.coarse):
+                    self.targets.extend([parent_10[x] for x in entry["coarse_labels"]])
+                else:
+                    self.targets.extend([mapping[x] for x in entry["fine_labels"]])
 
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
@@ -126,7 +151,10 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             raise RuntimeError("Dataset metadata file not found or corrupted. You can use download=True to download it")
         with open(path, "rb") as infile:
             data = pickle.load(infile, encoding="latin1")
-
-            self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
+            #print(data['fine_label_names'])
+            if(self.coarse):
+                self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
+            else:
+                self.classes = classes_for_parent_index.keys()
 
         self.class_to_idx = {_class: i for i, _class in enumerate(self.classes)}

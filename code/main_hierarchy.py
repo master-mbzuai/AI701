@@ -15,7 +15,7 @@ import random
 import importlib
 import numpy as np
 
-batch_size = 128
+batch_size = 64
 
 def START_seed():
     seed = 9
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-         transforms.Resize((224, 224), antialias=True), 
+         transforms.Resize((80, 80), antialias=True), 
          transforms.RandomHorizontalFlip(0.5),
          transforms.RandomRotation(10)
         ] 
@@ -97,14 +97,14 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-         transforms.Resize((224, 224), antialias=True),          
+         transforms.Resize((80, 80), antialias=True),          
         ] 
     )
     trainset = dataset.CIFAR100CUSTOM(
-        root="data/cifar-100", train=True, download=True, transform=train_transform
+        root="data/cifar-100", train=True, download=True, transform=train_transform, coarse=True
     )
     testset = dataset.CIFAR100CUSTOM(
-        root="data/cifar-100", train=False, download=True, transform=transform
+        root="data/cifar-100", train=False, download=True, transform=transform, coarse=True
     )        
     
     val_size = int(0.1 * len(trainset))
@@ -112,14 +112,14 @@ if __name__ == "__main__":
     train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
 
     train_loader = torch.utils.data.DataLoader(
-        train, batch_size=batch_size, 
+        trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=8, 
+        num_workers=1, 
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8, 
+        num_workers=1, 
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    if(hparams.model_name != "hierarchy"):
+    if(hparams.model_name != "hierarchy10"):
         save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     m.train(
         epochs=epochs,
-        datasets={"train": train_loader, "val": val_loader},
+        datasets={"train": train_loader, "val": test_loader},
         metrics=[acc],
         debug=hparams.debug,
     )

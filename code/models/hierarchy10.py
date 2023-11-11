@@ -71,19 +71,26 @@ class ImageClassification(MicroMind):
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(model_dict)        
-        for _, param in self.modules["feature_extractor"].named_parameters():    
-            param.requires_grad = False 
+        # for name, param in self.modules["feature_extractor"].named_parameters():    
+        #     if("_layers.6._" in name or "_layers.7._" in name or "_layers.8._" in name or "_layers.9._" in name):   
+        #         param.requires_grad = True
+        #     else:
+        #         param.requires_grad = False     
 
-        self.modules["classifier"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),                 
+        self.modules["flattener"] = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1, 1)),
+            nn.Flatten()
+        )
+
+        self.modules["classifier"] = nn.Sequential(                
                 nn.Linear(in_features=self.input, out_features=self.output)      
         )
 
     def forward(self, batch):     
 
         feature_vector = self.modules["feature_extractor"](batch[0])                      
-        x = self.modules["classifier"](feature_vector)
+        x = self.modules["flattener"](feature_vector)
+        x = self.modules["classifier"](x)
         return x
        
     def compute_loss(self, pred, batch):

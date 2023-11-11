@@ -7,3 +7,4 @@ code/results/*
 code/pretrained/
 code/results_test_bad/*
 code/logs/*
+code/wandb/*
