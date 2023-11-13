@@ -15,9 +15,6 @@ import random
 import importlib
 import numpy as np
 
-from torchvision.transforms import v2
-from torch.utils.data import default_collate
-
 batch_size = 64
 
 def START_seed():
@@ -29,6 +26,11 @@ def START_seed():
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
+
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
     
 def save_parameters(model, hparams):
 
@@ -68,7 +70,8 @@ if __name__ == "__main__":
     
     hparams = parse_arguments()    
     d = hparams.d
-    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'       
+    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'   
+    print(hparams.experiment_name)
 
     print("Running experiment with {}".format(hparams.d))
 
@@ -77,44 +80,31 @@ if __name__ == "__main__":
 
     m = ImageClassification(hparams, inner_layer_width = hparams.d)
 
-    def compute_accuracy(pred, batch): 
-        if(len(batch[1].shape)==1):   
-            tmp = (pred.argmax(1) == batch[1]).float()                                    
-        else:
-            tmp = (pred.argmax(1) == batch[1].argmax(1)).float()
+    def compute_accuracy(pred, batch):
+        tmp = (pred.argmax(1) == batch[1]).float()
         return tmp
-    
-    cutmix = v2.CutMix(num_classes=100, alpha=0.7)
-    mixup = v2.MixUp(num_classes=100, alpha=0.7)
-    cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
-
-    def collate_fn(batch):
-        res = cutmix_or_mixup(*default_collate(batch))        
-        return [x for x in res]  
         
     train_transform = transforms.Compose(
         [
          transforms.ToTensor(), 
-         transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
-         #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-         transforms.Resize((160, 160), antialias=True), 
+         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
+         transforms.Resize((80, 80), antialias=True), 
          transforms.RandomHorizontalFlip(0.5),
-         transforms.RandomRotation(10),         
+         transforms.RandomRotation(10)
         ] 
     )
     transform = transforms.Compose(
         [
          transforms.ToTensor(), 
-         transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
-         #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-         transforms.Resize((160, 160), antialias=True),          
+         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
+         transforms.Resize((80, 80), antialias=True),          
         ] 
     )
-    trainset = torchvision.datasets.CIFAR100(
-        root="data/cifar-100", train=True, download=True, transform=train_transform
+    trainset = dataset.CIFAR100CUSTOM(
+        root="data/cifar-100", train=True, download=True, transform=train_transform, coarse=True
     )
-    testset = torchvision.datasets.CIFAR100(
-        root="data/cifar-100", train=False, download=True, transform=transform
+    testset = dataset.CIFAR100CUSTOM(
+        root="data/cifar-100", train=False, download=True, transform=transform, coarse=True
     )        
     
     val_size = int(0.1 * len(trainset))
@@ -124,25 +114,24 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=4,    
-        collate_fn=collate_fn  
+        num_workers=1, 
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=4, 
+        num_workers=1, 
     )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=4,
+        num_workers=1,
     )
 
     print("Trainset size: ", len(train)//batch_size)
     print("Valset size: ", len(val)//batch_size)
     print("Testset size: ", len(testset)//batch_size)
 
-    if("hierarchy" in hparams.model_name):
+    if(hparams.model_name != "hierarchy10"):
         save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    

@@ -7,10 +7,12 @@ import torch.nn as nn
 
 from huggingface_hub import hf_hub_download
 
-REPO_ID = "micromind/ImageNet"
-FILENAME = "v7/state_dict.pth.tar"
+# REPO_ID = "micromind/ImageNet"
+# FILENAME = "v7/state_dict.pth.tar"
 
-model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
+# model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
+
+model_path = "./pretrained/finetuned/baseline.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -61,9 +63,9 @@ class ImageClassification(MicroMind):
                 model_dict[k] = v
 
         #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)        
-        # for _, param in self.modules["feature_extractor"].named_parameters():    
-        #     param.requires_grad = False
+        self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
+        for _, param in self.modules["feature_extractor"].named_parameters():    
+            param.requires_grad = False
 
         self.modules["classifier"] = nn.Sequential(                
                 nn.AdaptiveAvgPool2d((1, 1)),

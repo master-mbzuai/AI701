@@ -11,14 +11,17 @@ from torch.autograd import Variable
 
 # make_dot was moved to https://github.com/szagoruyko/pytorchviz
 from torchviz import make_dot
+import os
 
 
 from huggingface_hub import hf_hub_download
 
-REPO_ID = "micromind/ImageNet"
-FILENAME = "v7/state_dict.pth.tar"
+# REPO_ID = "micromind/ImageNet"
+# FILENAME = "v7/state_dict.pth.tar"
 
-model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
+# model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
+
+model_path = "./pretrained/finetuned/baseline.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -63,19 +66,12 @@ class ImageClassification(MicroMind):
         )
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load(model_path, map_location=device)
-        model_dict = {}
-        for k, v in pretrained_dict.items():
-            if "classifier" not in k:
-                model_dict[k] = v
+        pretrained_dict = torch.load(model_path, map_location=device)  
 
         #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)        
-        # for name, param in self.modules["feature_extractor"].named_parameters():    
-        #     if("_layers.6._" in name or "_layers.7._" in name or "_layers.8._" in name or "_layers.9._" in name):   
-        #         param.requires_grad = True
-        #     else:
-        #         param.requires_grad = False     
+        self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
+        for _, param in self.modules["feature_extractor"].named_parameters():                
+            param.requires_grad = False
 
         self.modules["flattener"] = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),

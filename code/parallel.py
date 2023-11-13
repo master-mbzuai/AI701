@@ -20,55 +20,92 @@ from torch.utils.data import default_collate
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
-from models.parallel import ImageClassification
+from micromind import MicroMind, Metric
+from micromind.networks import PhiNet
+from micromind.utils.parse import parse_arguments
 
-from huggingface_hub import hf_hub_download
+import torch.nn as nn
 
-REPO_ID = "micromind/ImageNet"
-FILENAME = "v7/state_dict.pth.tar"
-
-model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
+model_path = "./pretrained/finetuned/baseline.ckpt"
 
 # Spawn a separate process for each copy of the model
 # mp.set_start_method('spawn')  # must be not fork, but spawn
-
 queue = mp.Queue()
+
+class ImageClassification(MicroMind):
+
+    # test 1 with n as input vector size and m classes custom d
+    # n has to be calculated from the output of the neural network of the feature extractor
+    def __init__(self, *args, inner_layer_width = 10, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.input = 344
+        self.output = 100
+
+        self.modules["feature_extractor"] = PhiNet(
+            input_shape=(3, 224, 224),
+            alpha=0.9,
+            num_layers=7,
+            beta=0.5,
+            t_zero=4.0,
+            include_top=False,
+            num_classes=1000,
+            compatibility=False,
+            divisor=8,
+            downsampling_layers=[4,5,7]
+        )
+
+        self.modules["classifier"] = nn.Sequential(                
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),  
+                nn.Linear(in_features=self.input, out_features=self.output),
+        )    
+
+    def forward(self, batch):
+        x = self.modules["feature_extractor"](batch[0])  
+        x = self.modules["classifier"](x)      
+        return x
+
+    def compute_loss(self, pred, batch):
+        return nn.CrossEntropyLoss()(pred, batch[1])  
+
 
 # Define a function to train a single copy of the model
 def train_model(queue, DEVICE, hparams):
     # Set the random seed for reproducibility
     torch.manual_seed(42)
 
-    train_loader, val_loader, test_loader = queue.get()   
+    batch_size = 64
 
-    # Set the device to the current process's device
-    # with torch.no_grad():
-    model = ImageClassification(hparams, inner_layer_width=hparams.d).modules.to(DEVICE)
+    trainset, testset = queue.get()
 
-    # Taking away the classifier from pretrained model
-    pretrained_dict = torch.load(model_path, map_location=DEVICE)
-    model_dict = {}
-    for k, v in pretrained_dict.items():
-        if "classifier" not in k:
-            model_dict[k] = v
+    train_loader = torch.utils.data.DataLoader(
+        trainset, batch_size=batch_size, 
+        shuffle=True, 
+        num_workers=8, 
+    )
 
-    #loading the new model
-    # model.feature_extractor.load_state_dict(model_dict)
-    # for _, param in model.feature_extractor.named_parameters():
-    #     param.requires_grad = False
+    test_loader = torch.utils.data.DataLoader(
+        testset, batch_size=batch_size, 
+        shuffle=False, 
+        num_workers=1,    
+    )
 
-    # if rank == 0:
-    #     # changing weight in one model in a separate process doesn't affect the weights in the model in another process, because the weight tensors are not shared
-    #     model.fc1.weight[0][0] = -33.0
+    with torch.no_grad():
 
-    #     # but changing bias (which is a shared tensor) should affect biases in the other processes
-    #     model.fc1.bias *= 4
+        # Set the device to the current process's device
+        # with torch.no_grad():
+        m = ImageClassification(hparams, inner_layer_width=hparams.d)
+        
+        # Taking away the classifier from pretrained model
+        pretrained_dict = torch.load(model_path, map_location=DEVICE)  
 
-    #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='magenta')
+        test = pretrained_dict["feature_extractor"]
 
-    # if rank == 8:
-    #     cprint(f'RANK: {rank} | {list(model.parameters())[0][0,0]}', color='red')
-    #     cprint(f'RANK: {rank} | BIAS: {model.fc1.bias}', color='red') 
+        #loading the new model
+        m.modules["feature_extractor"].load_state_dict(test)        
+        for _, param in m.modules["feature_extractor"].named_parameters():                
+            param.requires_grad = False  
 
     print("Running experiment with {}".format(hparams.d))    
 
@@ -80,21 +117,12 @@ def train_model(queue, DEVICE, hparams):
 
     epochs = hparams.epochs
 
-    model.train(
+    m.train(
         epochs=epochs,
-        datasets={"train": train_loader, "val": val_loader},
+        datasets={"train": train_loader, "val": test_loader},
         metrics=[acc],
         debug=hparams.debug,
-    )
-
-    result = model.test(
-        datasets={"test": test_loader},
-    )    
-
-    result += " Epochs: " + str(epochs)
-
-    with open(hparams.output_folder + 'test_set_result.txt', 'w') as file:
-        file.write(result)
+    )   
 
 
 NUM_MODEL_COPIES = 10
@@ -102,8 +130,8 @@ DEVICE = 'cuda:0'
 
 hparams = parse_arguments()    
 
-#d = [10,25,50,75,90]
-d = [10]
+d = [10,25,50,75,90]
+#d = [10]
 
 processes = []
 for rank in d:
@@ -115,8 +143,6 @@ for rank in d:
     processes.append(process)
 
 time.sleep(2)
-
-batch_size = 64
 
 transform = transforms.Compose(
         [
@@ -133,34 +159,12 @@ trainset = torchvision.datasets.CIFAR100(
 )
 testset = torchvision.datasets.CIFAR100(
     root="data/cifar-100", train=False, download=True, transform=transform
-)        
-
-val_size = int(0.1 * len(trainset))
-train_size = len(trainset) - val_size
-train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
-
-print("Trainset size: ", len(train)//batch_size)
-print("Valset size: ", len(val)//batch_size)
-print("Testset size: ", len(testset)//batch_size)
-
-train_loader = torch.utils.data.DataLoader(
-    train, batch_size=batch_size, 
-    shuffle=True, 
-    num_workers=8, 
 )
-val_loader = torch.utils.data.DataLoader(
-    val, batch_size=batch_size, 
-    shuffle=False, 
-    num_workers=8,    
-)    
-test_loader = torch.utils.data.DataLoader(
-    testset, batch_size=batch_size, 
-    shuffle=False, 
-    num_workers=1,    
-)
+
+
 
 for rank in range(NUM_MODEL_COPIES):
-    queue.put((train_loader, val_loader, test_loader))
+    queue.put((trainset, testset))
 
 # Wait for all processes to finish
 for process in processes:

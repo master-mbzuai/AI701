@@ -8,6 +8,9 @@ import torchvision.transforms as transforms
 from torchinfo import summary
 from ptflops import get_model_complexity_info
 
+from torchvision.transforms import v2
+from torch.utils.data import default_collate
+
 import dataset.dataset as dataset
 
 import os
@@ -80,14 +83,25 @@ if __name__ == "__main__":
 
     m = ImageClassification(hparams, inner_layer_width = hparams.d)
 
-    def compute_accuracy(pred, batch):
-        tmp = (pred.argmax(1) == batch[1]).float()
+    def compute_accuracy(pred, batch): 
+        if(len(batch[1].shape)==1):   
+            tmp = (pred.argmax(1) == batch[1]).float()                                    
+        else:
+            tmp = (pred.argmax(1) == batch[1].argmax(1)).float()
         return tmp
+    
+    cutmix = v2.CutMix(num_classes=10, alpha=0.4)
+    mixup = v2.MixUp(num_classes=10, alpha=0.4)
+    cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
+
+    def collate_fn(batch):
+        res = cutmix_or_mixup(*default_collate(batch))        
+        return [x for x in res]  
         
     train_transform = transforms.Compose(
         [
          transforms.ToTensor(), 
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
+         transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
          transforms.Resize((80, 80), antialias=True), 
          transforms.RandomHorizontalFlip(0.5),
          transforms.RandomRotation(10)
@@ -96,7 +110,7 @@ if __name__ == "__main__":
     transform = transforms.Compose(
         [
          transforms.ToTensor(), 
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
+         transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
          transforms.Resize((80, 80), antialias=True),          
         ] 
     )
@@ -114,7 +128,8 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=1, 
+        num_workers=4,
+        collate_fn=collate_fn
     )
     val_loader = torch.utils.data.DataLoader(
         val, batch_size=batch_size, 
@@ -124,7 +139,7 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=1,
+        num_workers=4,
     )
 
     print("Trainset size: ", len(train)//batch_size)
@@ -145,11 +160,11 @@ if __name__ == "__main__":
         debug=hparams.debug,
     )
 
-    result = m.test(
-        datasets={"test": test_loader},
-    )    
+    # result = m.test(
+    #     datasets={"test": test_loader},
+    # )    
 
-    result += " Epochs: " + str(epochs)
+    # result += " Epochs: " + str(epochs)
 
-    with open(hparams.output_folder + "/" + hparams.experiment_name+ '/test_set_result.txt', 'w') as file:
-        file.write(result)
+    # with open(hparams.output_folder + "/" + hparams.experiment_name+ '/test_set_result.txt', 'w') as file:
+    #     file.write(result)
