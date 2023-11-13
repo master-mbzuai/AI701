@@ -62,6 +62,8 @@ class ImageClassification(MicroMind):
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
+        for _, param in self.modules["feature_extractor"].named_parameters():    
+            param.requires_grad = False
 
         self.modules["classifier"] = nn.Sequential(                
                 nn.AdaptiveAvgPool2d((1, 1)),
