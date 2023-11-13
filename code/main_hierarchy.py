@@ -84,8 +84,8 @@ if __name__ == "__main__":
             tmp = (pred.argmax(1) == batch[1].argmax(1)).float()
         return tmp
     
-    cutmix = v2.CutMix(num_classes=10, alpha=0.4)
-    mixup = v2.MixUp(num_classes=10, alpha=0.4)
+    cutmix = v2.CutMix(num_classes=10, alpha=0.5)
+    mixup = v2.MixUp(num_classes=10, alpha=0.5)
     cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
 
     def collate_fn(batch):
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
-         transforms.Resize((80, 80), antialias=True), 
+         transforms.Resize((160, 160), antialias=True), 
          transforms.RandomHorizontalFlip(0.5),
          transforms.RandomRotation(10)
         ] 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
-         transforms.Resize((80, 80), antialias=True),          
+         transforms.Resize((160, 160), antialias=True),          
         ] 
     )
     trainset = dataset.CIFAR100CUSTOM(
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     )
     testset = dataset.CIFAR100CUSTOM(
         root="data/cifar-100", train=False, download=True, transform=transform, coarse=True
-    )        
+    )
 
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 

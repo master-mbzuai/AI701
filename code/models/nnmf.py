@@ -1,19 +1,10 @@
-from micromind import MicroMind, Metric
+from micromind import MicroMind
 from micromind.networks import PhiNet
-from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
-import torchvision
-import torchvision.transforms as transforms
 
-exp = 0
-alpha_id = 0
-
-alphas_str = ['0.2', '1', '15', '2', '3']
-alphas = [0.2, 1, 1.5, 2, 3]
-# input sizes for the different alpha values
-inputs = [38, 192, 288, 384, 576]
+model_path = "./pretrained/finetuned/baseline.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -33,35 +24,47 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = inputs[alpha_id]
-        self.output = 100
+        self.input = 344
+        self.output = 100        
         self.d = inner_layer_width
 
         self.modules["feature_extractor"] = PhiNet(
-            (3, 32, 32), include_top=False, num_classes=100, alpha=alphas[alpha_id]
-        )        
+            input_shape=(3, 240, 240),
+            alpha=0.9,
+            num_layers=7,
+            beta=0.5,
+            t_zero=4.0,
+            include_top=False,
+            num_classes=1000,
+            compatibility=False,
+            divisor=8,
+            downsampling_layers=[4,5,7]
+        )
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load("./pretrained/pre_trained_scratch_300.ckpt", map_location=device)["feature_extractor"]        
+        pretrained_dict = torch.load(model_path, map_location=device)
         model_dict = {}
         for k, v in pretrained_dict.items():
             if "classifier" not in k:
                 model_dict[k] = v
 
         #loading the new model
-        self.modules["feature_extractor"].load_state_dict(model_dict)
+        self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
+        for _, param in self.modules["feature_extractor"].named_parameters():    
+            param.requires_grad = False
 
-        self.modules["nmf_classifier"] = nn.Sequential(
-                nn.ReLU(),
+        self.modules["classifier"] = nn.Sequential(                
                 nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Linear(in_features=self.input, out_features=self.d),                
+                nn.Flatten(),                
+                nn.ReLU(),
+                nn.Linear(in_features=self.input, out_features=self.d),
+                nn.Dropout(p=0.5),
                 nn.Linear(in_features=self.d, out_features=self.output)
-            )
+            )                
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])        
-        x = self.modules["nmf_classifier"](x)
+        x = self.modules["classifier"](x)
         return x
 
     def compute_loss(self, pred, batch):
@@ -85,7 +88,7 @@ class ImageClassification(MicroMind):
         ], f"Optimizer {self.hparams.opt} not supported."
         if self.hparams.opt == "adam":
             opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
-            sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
+            sched = torch.optim.lr_scheduler.StepLR(opt, step_size=25, gamma=0.1)            
         elif self.hparams.opt == "sgd":
             opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
         return opt, sched

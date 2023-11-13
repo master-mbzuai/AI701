@@ -55,7 +55,7 @@ class ImageClassification(MicroMind):
 
         self.modules["classifier"] = nn.Sequential(                
                 nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),                
+                nn.Flatten(),
                 nn.Linear(in_features=self.input, out_features=self.d),
                 nn.Dropout(p=0.5),
                 nn.Linear(in_features=self.d, out_features=self.output)

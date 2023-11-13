@@ -85,9 +85,7 @@ class ImageClassification(MicroMind):
             Optimizer and learning rate scheduler
             (not implemented yet). : Tuple[torch.optim.Adam, None]
 
-        """
-
-        print("HEYEYDYEYHYHYDEHYHD")
+        """        
 
         assert self.hparams.opt in [
             "adam",

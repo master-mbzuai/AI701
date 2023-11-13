@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as mcolors
 
 exp = 0
-alpha = 1.5
+alpha = 0.9
 
 # read folder 
 
@@ -36,17 +36,21 @@ def read_architecture(file_path):
 
 def read_results(file_path):
     with open(file_path, 'r') as f:
-        line = f.readlines()[0]
-        accuracy_match = r'\d+\.\d+'
+        print("ciaooo")
+        line = f.readlines()[-1]
+        #accuracy_match = r'\d+\.\d+'
+        #Epoch 99: train_accuracy: 0.62 - train_loss: 2.19 - lr: 0.00; val_accuracy: 0.7174 - val_loss: 1.1699.
 
-        matches = re.findall(accuracy_match, line)
-        return matches    
+        match = r'Epoch (\d+): train_accuracy: (\d+\.\d+) - train_loss: (\d+\.\d+) - lr: 0.00; val_accuracy: (\d+\.\d+) - val_loss: (\d+\.\d+).'
+
+        matches = re.findall(match, line)        
+        return matches[0][3:]
     
 
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_lr0.0001_epochs_100_sched_bigger_images/"
+    path = "../results/adaptive_fixed/"
 
     for folder in os.listdir(path):      
 
@@ -54,7 +58,8 @@ if __name__ == "__main__":
         #folder = [x for x in folder if "." not in x]  
         results[folder] = {}
         for exp in os.listdir(path + folder):
-            if("architecture.txt" == exp):
+            print(exp)
+            if("architecture.txt" == exp):                
                 meta = read_architecture(path + folder + "/" + exp)                
                 results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
                 quantity = meta["CLASSIFIER_MACs"]                
@@ -62,7 +67,8 @@ if __name__ == "__main__":
                 quantity2 = meta["BACKBONE_MACs"]                
 
                 results[folder]["mac_all"] = str(float(quantity) + float(quantity2))
-            elif("test_set_result.txt" == exp):
+
+            elif("train_log.txt" == exp):
                 accuracy, loss = read_results(path + folder + "/" + exp)
                 results[folder]["accuracy"] = accuracy
                 results[folder]["loss"] = loss
@@ -92,10 +98,10 @@ if __name__ == "__main__":
     params = [params[i] for i in sorted_indices]
 
     # Create the scatter plot
-    plt.scatter(numbers, accuracies, s=50, alpha=0.5, c=dot_colors, label='Parameters')
+    plt.scatter(numbers, accuracies, s=params, alpha=0.5, c=dot_colors, label='Parameters')
 
     # Labeling each point with the corresponding number
-    for i, txt in enumerate(numbers):
+    for i, txt in enumerate(params):
         plt.annotate(txt, (numbers[i], accuracies[i]))
 
     if(alpha > 10):
@@ -103,7 +109,8 @@ if __name__ == "__main__":
     else:
         alpha_title = str(alpha)
 
-    plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 200 epochs')
+
+    plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 100 epochs')
     plt.xlabel('Number')
     plt.ylabel('Accuracy')
     plt.colorbar(label='Parameters (KMac)')
