@@ -1,16 +1,8 @@
-from micromind import MicroMind, Metric
+from micromind import MicroMind
 from micromind.networks import PhiNet
-from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
-
-from huggingface_hub import hf_hub_download
-
-# REPO_ID = "micromind/ImageNet"
-# FILENAME = "v7/state_dict.pth.tar"
-
-# model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
 
 model_path = "./pretrained/finetuned/baseline.ckpt"
 
@@ -33,12 +25,6 @@ class ImageClassification(MicroMind):
 
         self.input = 344
         self.output = 100
-
-        # alpha: 0.9
-        # beta: 0.5
-        # num_classes: 1000
-        # num_layers: 7
-        # t_zero: 4.0
 
         self.modules["feature_extractor"] = PhiNet(
             input_shape=(3, 224, 224),
@@ -89,9 +75,7 @@ class ImageClassification(MicroMind):
             Optimizer and learning rate scheduler
             (not implemented yet). : Tuple[torch.optim.Adam, None]
 
-        """
-
-        print("HEYEYDYEYHYHYDEHYHD")
+        """        
 
         assert self.hparams.opt in [
             "adam",
@@ -100,8 +84,7 @@ class ImageClassification(MicroMind):
         if self.hparams.opt == "adam":
             opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
             print(self.hparams.lr)
-            sched = torch.optim.lr_scheduler.StepLR(opt, step_size=30, gamma=0.5)
-            #sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.001, threshold_mode='rel', cooldown=2, min_lr=0, eps=1e-08, verbose=True)
+            sched = torch.optim.lr_scheduler.StepLR(opt, step_size=30, gamma=0.5)            
         elif self.hparams.opt == "sgd":
             opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
-        return opt, sched  # None is for learning rate sched
+        return opt, sched

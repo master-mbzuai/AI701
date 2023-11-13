@@ -59,7 +59,7 @@ class ImageClassification(MicroMind):
             beta=0.5,
             t_zero=4.0,
             include_top=False,
-            num_classes=1000,
+            num_classes=100,
             compatibility=False,
             divisor=8,
             downsampling_layers=[4,5,7]

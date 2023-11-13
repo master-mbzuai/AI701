@@ -115,34 +115,21 @@ if __name__ == "__main__":
     )
     testset = torchvision.datasets.CIFAR100(
         root="data/cifar-100", train=False, download=True, transform=transform
-    )        
-    
-    val_size = int(0.1 * len(trainset))
-    train_size = len(trainset) - val_size
-    train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
+    )               
 
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=4,    
+        num_workers=2,    
         collate_fn=collate_fn  
     )
-    val_loader = torch.utils.data.DataLoader(
-        val, batch_size=batch_size, 
-        shuffle=False, 
-        num_workers=4, 
-    )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=4,
+        num_workers=2,
     )
 
-    print("Trainset size: ", len(train)//batch_size)
-    print("Valset size: ", len(val)//batch_size)
-    print("Testset size: ", len(testset)//batch_size)
-
-    if("hierarchy" in hparams.model_name):
+    if("hierarchy" not in hparams.model_name):
         save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    

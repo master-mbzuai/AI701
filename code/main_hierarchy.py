@@ -3,7 +3,6 @@ from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
-import torchvision
 import torchvision.transforms as transforms
 from torchinfo import summary
 from ptflops import get_model_complexity_info
@@ -29,11 +28,6 @@ def START_seed():
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
-
-def seed_worker(worker_id):
-    worker_seed = torch.initial_seed() % 2**32
-    np.random.seed(worker_seed)
-    random.seed(worker_seed)
     
 def save_parameters(model, hparams):
 
@@ -120,31 +114,18 @@ if __name__ == "__main__":
     testset = dataset.CIFAR100CUSTOM(
         root="data/cifar-100", train=False, download=True, transform=transform, coarse=True
     )        
-    
-    val_size = int(0.1 * len(trainset))
-    train_size = len(trainset) - val_size
-    train, val = torch.utils.data.random_split(trainset, [train_size, val_size])    
 
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=4,
+        num_workers=2,
         collate_fn=collate_fn
     )
-    val_loader = torch.utils.data.DataLoader(
-        val, batch_size=batch_size, 
-        shuffle=False, 
-        num_workers=1, 
-    )    
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=4,
+        num_workers=2,
     )
-
-    print("Trainset size: ", len(train)//batch_size)
-    print("Valset size: ", len(val)//batch_size)
-    print("Testset size: ", len(testset)//batch_size)
 
     if(hparams.model_name != "hierarchy10"):
         save_parameters(m, hparams)
@@ -159,12 +140,3 @@ if __name__ == "__main__":
         metrics=[acc],
         debug=hparams.debug,
     )
-
-    # result = m.test(
-    #     datasets={"test": test_loader},
-    # )    
-
-    # result += " Epochs: " + str(epochs)
-
-    # with open(hparams.output_folder + "/" + hparams.experiment_name+ '/test_set_result.txt', 'w') as file:
-    #     file.write(result)
