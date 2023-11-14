@@ -50,7 +50,7 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_relu/"
+    path = "../results/adaptive_01/"
 
     for folder in os.listdir(path):      
         if folder in ["0", "10","25","50","75","90"]:

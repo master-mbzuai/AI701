@@ -8,4 +8,4 @@ for i in "${!args[@]}"; do
   xterm -geometry $geometry -e "python main.py --d ${args[$i]} --model_name adaptive --epochs 100 --experiment_name adaptive_01 --lr 0.0001; exit" &  
 done
 
-xterm -e "python main.py --d 0 --model_name original --epochs 100 --experiment_name adaptive_01 --lr 0.0001; exit" &  
+xterm -e "python main.py --d 0 --model_name original_pre --epochs 100 --experiment_name adaptive_01 --lr 0.0001; exit" &  
