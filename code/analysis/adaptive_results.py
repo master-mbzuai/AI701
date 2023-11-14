@@ -50,28 +50,27 @@ def read_results(file_path):
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/adaptive_fixed/"
+    path = "../results/adaptive_relu/"
 
     for folder in os.listdir(path):      
+        if folder in ["0", "10","25","50","75","90"]:
+            print(folder)
+            #folder = [x for x in folder if "." not in x]  
+            results[folder] = {}
+            for exp in os.listdir(path + folder):                        
+                if("architecture.txt" == exp):                
+                    meta = read_architecture(path + folder + "/" + exp)                
+                    results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
+                    quantity = meta["CLASSIFIER_MACs"]                
 
-        print(folder)
-        #folder = [x for x in folder if "." not in x]  
-        results[folder] = {}
-        for exp in os.listdir(path + folder):
-            print(exp)
-            if("architecture.txt" == exp):                
-                meta = read_architecture(path + folder + "/" + exp)                
-                results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
-                quantity = meta["CLASSIFIER_MACs"]                
+                    quantity2 = meta["BACKBONE_MACs"]                
 
-                quantity2 = meta["BACKBONE_MACs"]                
+                    results[folder]["mac_all"] = str(float(quantity) + float(quantity2))
 
-                results[folder]["mac_all"] = str(float(quantity) + float(quantity2))
-
-            elif("train_log.txt" == exp):
-                accuracy, loss = read_results(path + folder + "/" + exp)
-                results[folder]["accuracy"] = accuracy
-                results[folder]["loss"] = loss
+                elif("train_log.txt" == exp):
+                    accuracy, loss = read_results(path + folder + "/" + exp)
+                    results[folder]["accuracy"] = accuracy
+                    results[folder]["loss"] = loss
 
     data = {k: v for k, v in sorted(results.items(), key=lambda item: item[0], reverse=False)}    
 
@@ -109,7 +108,9 @@ if __name__ == "__main__":
     else:
         alpha_title = str(alpha)
 
-
+    plt.axhline(accuracies[0], color='orange', linestyle='--')
+    plt.text(40, accuracies[0]-0.007, "Baseline", color='orange')
+    plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
     plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 100 epochs')
     plt.xlabel('Number')
     plt.ylabel('Accuracy')

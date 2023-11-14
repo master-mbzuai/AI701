@@ -3,7 +3,7 @@ import os
 from matplotlib import pyplot as plt
 
 def extract_metrics(input_string):
-    pattern = r"Epoch (\d+): train_accuracy: (\d+\.\d+) - train_loss: (\d+\.\d+); val_accuracy: (\d+\.\d+) - val_loss: (\d+\.\d+)."
+    pattern = r'Epoch (\d+): train_accuracy: (\d+\.\d+) - train_loss: (\d+\.\d+) - lr: 0.00; val_accuracy: (\d+\.\d+) - val_loss: (\d+\.\d+).'
     matches = re.findall(pattern, input_string)
 
     extracted_data = {
@@ -25,7 +25,7 @@ def extract_metrics(input_string):
 
 
 #path = "../results/augment_01_scheduler/0/augment_01_scheduler/"
-path = "../results/adaptive_50_epochs_01/"
+path = "../results/adaptive_relu/"
 #open text file in read mode
 
 
@@ -55,5 +55,5 @@ def create_image(path, x):
 
 for x in os.listdir(path):
     print(x)
-    if x in ["0", "10","25","50","75","90"]:
+    if x in ["0", "10","25","50","75","90"]:        
         create_image(path, x)
