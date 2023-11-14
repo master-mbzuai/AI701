@@ -59,9 +59,7 @@ class ImageClassification(MicroMind):
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),                
                 nn.ReLU(),
-                poselinear.PositiveLinear(in_features=self.input, out_features=self.d),
-                nn.Dropout(p=0.5),
-                poselinear.PositiveLinear(in_features=self.d, out_features=self.output)
+                poselinear.PositiveLinear(in_features=self.input, out_features=self.output),
             )                
 
     def forward(self, batch):
