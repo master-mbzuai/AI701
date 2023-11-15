@@ -4,7 +4,7 @@ pretrained/
 
 code/data/*
 code/results/*
-code/pretrained/
+code/pretrained/v7/*
 code/results_test_bad/*
 code/logs/*
 code/wandb/*
