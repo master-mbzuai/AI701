@@ -4,7 +4,10 @@ from micromind.networks import PhiNet
 import torch
 import torch.nn as nn
 
+import pickle
+
 model_path = "./pretrained/finetuned/baseline.ckpt"
+embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -23,8 +26,23 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = 200
+        self.input = inner_layer_width
         self.output = 100
+
+        print("evvai qui ci siamo", inner_layer_width)
+
+        # import the embeddings
+        with open(embedding_path, 'rb') as file:
+            data = pickle.load(file)
+
+        x = data["outputs"]
+
+        # self.pca = PCA(n_components=self.input)
+        # self.pca.fit_transform(x)
+
+        U, S, V = torch.pca_lowrank(x, q=self.input)
+        self.V = V.to('cuda:0')
+        
 
         self.modules["feature_extractor"] = PhiNet(
             input_shape=(3, 224, 224),
@@ -54,17 +72,17 @@ class ImageClassification(MicroMind):
         self.modules["flattener"] = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten()
-            )
+        )
 
         self.modules["classifier"] = nn.Sequential(
-                nn.Linear(in_features=self.input, out_features=self.output),
-            )     
+            nn.Linear(in_features=self.input, out_features=self.output),
+        )
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])  
         x = self.modules["flattener"](x)      
-        x = x.tranform(x)
-        x = self.modules["classifier"](x)
+        x = torch.matmul(x, self.V) # we need to add this as a computation complexity
+        x = self.modules["classifier"](x.to('cuda:0'))
         return x
 
     def compute_loss(self, pred, batch):

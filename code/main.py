@@ -64,9 +64,10 @@ def save_parameters(model, hparams):
 
 if __name__ == "__main__":  
 
-    START_seed()  
-    
+    START_seed()          
+
     hparams = parse_arguments()    
+    print(hparams)
     d = hparams.d
     hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'       
 
@@ -129,8 +130,8 @@ if __name__ == "__main__":
         num_workers=2,
     )
 
-    if("hierarchy" not in hparams.model_name):
-        save_parameters(m, hparams)
+    # if("hierarchy" not in hparams.model_name or "pca" not in hparams.model_name):
+    #     save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 

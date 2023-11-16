@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--model_name", "hierarchy10", "--experiment_name", "testparallel", "--lr", "0.01"]
+            "args": ["--model_name", "original_pre_pca", "--experiment_name", "pca", "--lr", "0.0001"]
         }
     ]
 }
