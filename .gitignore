@@ -1,6 +1,5 @@
 data/*
 output_onnx/
-pretrained/
 
 code/data/*
 code/results/*
