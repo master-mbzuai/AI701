@@ -1,0 +1,15 @@
+- fuclly connected baseline
+- matrix factorization with different D 
+- nnmf - relu sigmoid
+- clustering -> hierarchical 
+    -> embeddings are different from semantics
+    -> spectral
+    -> L1
+    -> L2
+    -> DBscan
+    -> Cosine similarity
+-> (hierarchy maybe)
+-> PCA on embeddings
+-> hierarchical 20-5
+
+

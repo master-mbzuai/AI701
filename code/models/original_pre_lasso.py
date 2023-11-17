@@ -26,21 +26,12 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = 300
+        self.alpha = inner_layer_width
+
+        self.input = 344
         self.output = 100
 
-        # import the embeddings
-        with open(embedding_path, 'rb') as file:
-            data = pickle.load(file)
-
-        x = data["outputs"]
-
-        # self.pca = PCA(n_components=self.input)
-        # self.pca.fit_transform(x)
-
-        U, S, V = torch.pca_lowrank(x, q=self.input)
-        self.V = V.to('cuda:0')
-        
+        self.lasso = nn.Parameter(torch.rand(self.input), requires_grad=True)
 
         self.modules["feature_extractor"] = PhiNet(
             input_shape=(3, 224, 224),
@@ -77,14 +68,17 @@ class ImageClassification(MicroMind):
         )
 
     def forward(self, batch):
-        x = self.modules["feature_extractor"](batch[0])  
+        x = self.modules["feature_extractor"](batch[0])
         x = self.modules["flattener"](x)      
-        x = torch.matmul(x, self.V) # we need to add this as a computation complexity
+        x = torch.matmul(x, self.lasso) # we need to add this as a computation complexity
         x = self.modules["classifier"](x.to('cuda:0'))
         return x
 
     def compute_loss(self, pred, batch):
-        return nn.CrossEntropyLoss()(pred, batch[1])
+
+        lasso_loss = self.lasso.abs().sum() * self.alpha
+        cross_loss = nn.CrossEntropyLoss()(pred, batch[1])
+        return lasso_loss + cross_loss
     
     def configure_optimizers(self):
         """Configures and defines the optimizer for the task. Defaults to adam
