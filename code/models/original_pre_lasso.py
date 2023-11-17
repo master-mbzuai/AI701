@@ -75,7 +75,7 @@ class ImageClassification(MicroMind):
         return x
 
     def compute_loss(self, pred, batch):
-
+        #test github
         lasso_loss = self.lasso.abs().sum() * self.alpha
         cross_loss = nn.CrossEntropyLoss()(pred, batch[1])
         return lasso_loss + cross_loss
