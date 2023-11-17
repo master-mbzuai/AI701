@@ -26,12 +26,15 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.alpha = inner_layer_width
+        self.alpha = 1/inner_layer_width
+
+        print(self.alpha)
 
         self.input = 344
         self.output = 100
 
-        self.lasso = nn.Parameter(torch.rand(self.input), requires_grad=True)
+        self.lasso = nn.Parameter(torch.rand(self.input), requires_grad=True).to(device)
+        self.lasso.requires_grad_ = True
 
         self.modules["feature_extractor"] = PhiNet(
             input_shape=(3, 224, 224),
@@ -69,13 +72,12 @@ class ImageClassification(MicroMind):
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])
-        x = self.modules["flattener"](x)      
-        x = torch.matmul(x, self.lasso) # we need to add this as a computation complexity
-        x = self.modules["classifier"](x.to('cuda:0'))
+        x = self.modules["flattener"](x)
+        x = torch.mul(x, self.lasso) # we need to add this as a computation complexity
+        x = self.modules["classifier"](x)
         return x
 
-    def compute_loss(self, pred, batch):
-        #test github
+    def compute_loss(self, pred, batch):        
         lasso_loss = self.lasso.abs().sum() * self.alpha
         cross_loss = nn.CrossEntropyLoss()(pred, batch[1])
         return lasso_loss + cross_loss
