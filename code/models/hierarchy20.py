@@ -74,7 +74,7 @@ class ImageClassification(MicroMind):
         return x
        
     def compute_loss(self, pred, batch):
-        return nn.MSELoss(pred, batch[1])
+        return nn.CrossEntropyLoss()(pred, batch[1])
     
     def configure_optimizers(self):
         """Configures and defines the optimizer for the task. Defaults to adam
