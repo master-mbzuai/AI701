@@ -62,7 +62,7 @@ class ImageClassification(MicroMind):
         )
 
         self.modules["classifier"] = nn.Sequential(   
-                nn.ReLU(),
+                #nn.ReLU(),
                 nn.Linear(in_features=self.input, out_features=self.output)      
         )
 
