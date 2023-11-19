@@ -24,6 +24,10 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.alpha = 1/inner_layer_width
+
+        print(self.alpha)
+
         self.input = 344
         self.output = 10
 
