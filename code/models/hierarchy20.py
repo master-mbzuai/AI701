@@ -62,7 +62,7 @@ class ImageClassification(MicroMind):
         )
 
         self.modules["classifier"] = nn.Sequential(   
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(in_features=self.input, out_features=self.output)      
         )
 
@@ -74,7 +74,7 @@ class ImageClassification(MicroMind):
         return x
        
     def compute_loss(self, pred, batch):
-        return nn.CrossEntropyLoss()(pred, batch[1])
+        return nn.MSELoss(pred, batch[1])
     
     def configure_optimizers(self):
         """Configures and defines the optimizer for the task. Defaults to adam
