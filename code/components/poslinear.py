@@ -23,7 +23,8 @@ class PositiveLinear(nn.Module):
             nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, input):
-        return nn.functional.linear(input, nn.ReLU(self.log_weight), self.bias)
+        x = nn.functional.relu(self.log_weight)
+        return nn.functional.linear(input, x, self.bias)
     
     def extra_repr(self) -> str:
         return f'in_features={self.in_features}, out_features={self.out_features}, bias={self.bias is not None}'
