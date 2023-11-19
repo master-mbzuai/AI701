@@ -1,25 +1,8 @@
-from micromind import MicroMind, Metric
+from micromind import MicroMind
 from micromind.networks import PhiNet
-from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
-
-from graphviz import Digraph
-import torch
-from torch.autograd import Variable
-
-# make_dot was moved to https://github.com/szagoruyko/pytorchviz
-from torchviz import make_dot
-import os
-
-
-from huggingface_hub import hf_hub_download
-
-# REPO_ID = "micromind/ImageNet"
-# FILENAME = "v7/state_dict.pth.tar"
-
-# model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
 
 model_path = "./pretrained/finetuned/baseline.ckpt"
 
