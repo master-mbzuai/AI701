@@ -3,7 +3,20 @@ output_onnx/
 
 code/data/*
 code/results/*
+
 code/pretrained/v7/*
 code/results_test_bad/*
 code/logs/*
 code/wandb/*
+
+*.ckpt
+
+!code/results/adaptive_01
+!code/results/adaptive_relu
+!code/results/lasso
+!code/results/linear_prob_no
+!code/results/nnmf_bas
+!code/results/nnmf_relu
+!code/results/nnmf_sig
+!code/results/pca
+!code/results/pca_best
