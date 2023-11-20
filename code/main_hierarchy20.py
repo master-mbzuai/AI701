@@ -17,7 +17,7 @@ import random
 import importlib
 import numpy as np
 
-batch_size = 64
+batch_size = 32
 
 def START_seed():
     seed = 9
