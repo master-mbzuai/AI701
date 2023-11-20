@@ -144,8 +144,8 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
                 #print(entry["fine_labels"])
 
                 if(self.coarse):
-                    self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
-                    #self.targets.extend(entry["coarse_labels"])
+                    #self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
+                    self.targets.extend(entry["coarse_labels"])
                 else:
                     self.targets.extend([mapping[x] for x in entry["fine_labels"]])
 
@@ -162,8 +162,8 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             data = pickle.load(infile, encoding="latin1")
             #print(data['fine_label_names'])
             if(self.coarse):
-                #self.classes = data['coarse_label_names']
-                self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
+                self.classes = data['coarse_label_names']
+                #self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
             else:
                 self.classes = classes_for_parent_index.keys()
 

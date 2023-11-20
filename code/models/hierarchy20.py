@@ -28,9 +28,7 @@ class ImageClassification(MicroMind):
         self.output = 20
 
         self.lasso = nn.Parameter(torch.rand(self.input), requires_grad=True).to(device)
-        self.lasso.requires_grad_ = True
-
-        self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)        
+        self.lasso.requires_grad_ = True        
 
         # alpha: 0.9
         # beta: 0.5
@@ -73,11 +71,14 @@ class ImageClassification(MicroMind):
 
         feature_vector = self.modules["feature_extractor"](batch[0])                      
         x = self.modules["flattener"](feature_vector)
+        x = torch.mul(x, self.lasso) # we need to add this as a computation complexity
         x = self.modules["classifier"](x)
         return x
        
-    def compute_loss(self, pred, batch):
-        return nn.CrossEntropyLoss()(pred, batch[1])
+    def compute_loss(self, pred, batch):        
+        lasso_loss = self.lasso.abs().sum() * self.alpha
+        cross_loss = nn.CrossEntropyLoss()(pred, batch[1])
+        return lasso_loss + cross_loss
     
     def configure_optimizers(self):
         """Configures and defines the optimizer for the task. Defaults to adam
