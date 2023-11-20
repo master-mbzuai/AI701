@@ -27,6 +27,8 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 20
 
+        self.alpha = 1/inner_layer_width
+
         self.lasso = nn.Parameter(torch.rand(self.input), requires_grad=True).to(device)
         self.lasso.requires_grad_ = True        
 
