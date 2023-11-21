@@ -114,12 +114,12 @@ class ImageClassification(MicroMind):
         shifted = feature_vector + shifts
         last = self.modules["classifier"](shifted)
 
-        softmax2 = DiffSoftmax(last, tau=1.0, hard=False, dim=1)
+        softmax2 = DiffSoftmax(last, tau=1.0, hard=True, dim=1)
 
         # Find the index of the 1
         #indices_of_ones1 = (softmax * self.indices).sum(dim=1)
 
-        indices_of_ones2 = torch.argmax(last, dim=1)
+        # indices_of_ones2 = torch.argmax(last, dim=1)
         # print(indices_of_ones2)
 
         #indexes_int = torch.argmax(softmax, dim=1)
