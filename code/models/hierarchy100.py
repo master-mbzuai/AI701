@@ -12,7 +12,7 @@ from huggingface_hub import hf_hub_download
 
 # model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
 
-model_path = "./code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_16_val_loss_0.7207.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -47,7 +47,7 @@ class ImageClassification(MicroMind):
         print("YES YOU ARE AMAZING")
 
         self.input = 344
-        self.output = 10                
+        self.output = 10
 
         self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)
         # Create a tensor of indices
@@ -88,9 +88,6 @@ class ImageClassification(MicroMind):
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),                   
         )
-        self.modules["flattener"].load_state_dict(pretrained_dict["flattener"])
-        for _, param in self.modules["flattener"].named_parameters():    
-            param.requires_grad = False 
 
         self.modules["classifier"] = nn.Sequential(
             nn.Linear(in_features=self.input, out_features=self.output)    
@@ -100,7 +97,9 @@ class ImageClassification(MicroMind):
             param.requires_grad = False 
 
 
-    def forward(self, batch):     
+    def forward(self, batch):
+
+        print(batch[1])
 
         feature_vector = self.modules["feature_extractor"](batch[0])
         feature_vector = self.modules["flattener"](feature_vector)            
