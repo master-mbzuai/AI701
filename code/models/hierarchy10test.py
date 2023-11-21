@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-model_path = "./pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -74,10 +74,10 @@ class ImageClassification(MicroMind):
         x = self.modules["classifier"](x)
         indices_1 = torch.argmax(x, dim=1)
         indices_np = indices_1.to('cpu').numpy()
-        test= batch[1].to('cpu').numpy()
-        # print(test)
-        # print(indices_np)
-        # print(test == indices_np)
+        test = batch[1].to('cpu').numpy()
+        print(test)
+        print(indices_np)
+        print(test == indices_np)
         print((test == indices_np).sum()/len(indices_1))
 
         #print(torch.tensor(indices_1.tolist() == batch[1]).sum()/len(indices_1))

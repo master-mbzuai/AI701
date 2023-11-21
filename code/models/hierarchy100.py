@@ -76,11 +76,12 @@ class ImageClassification(MicroMind):
         x = self.modules["classifier"](x)
         indices_1 = torch.argmax(x, dim=1)
         indices_np = indices_1.to('cpu').numpy()
-        test = np.array([clustering_mapping[y] for y in indices_np])
-        test= batch[1].to('cpu').numpy()
-        print(test)
-        print(indices_np)
-        print(test == indices_np)
+        test = batch[1].to('cpu').numpy()
+        print("trut", test)
+        test = np.array([clustering_mapping[y] for y in test])
+        print("trut_cluster", test)
+        print("predicted", indices_np)
+        print(test == indices_np )
         print((test == indices_np).sum()/len(indices_1))
         
 
