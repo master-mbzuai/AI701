@@ -42,6 +42,7 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 10
 
+        self.modifier_shift = torch.randn(self.output, self.input, requires_grad=True, device=device)
         self.modifier_bias = torch.randn(self.output, self.input, requires_grad=True, device=device)
         #self.modifier_bias.requires_grad = True
 
@@ -110,11 +111,12 @@ class ImageClassification(MicroMind):
         #out_expanded = softmax.unsqueeze(2)
         #shifts = (out_expanded * broadcasted_bias).sum(dim=1) 
 
-        shifts = torch.index_select(self.modifier_bias, 0, indices_1)
-        shifted = feature_vector + shifts
+        shifts = torch.index_select(self.modifier_shift, 0, indices_1)
+        bias = torch.index_select(self.modifier_bias, 0, indices_1)
+        shifted = (feature_vector * shifts) + bias
         last = self.modules["classifier"](shifted)
 
-        softmax2 = DiffSoftmax(last, tau=1.0, hard=True, dim=1)
+        softmax2 = DiffSoftmax(last, tau=1.0, hard=False, dim=1)
 
         # Find the index of the 1
         #indices_of_ones1 = (softmax * self.indices).sum(dim=1)
@@ -138,7 +140,9 @@ class ImageClassification(MicroMind):
         # Use 'torch.arange' and 'torch.stack' for creating the sequence tensors
         to_add = torch.stack([torch.arange(start[i], end[i], device=device) for i in range(len(indices_1))])
 
-        output_tensor.scatter_(1, to_add, softmax2)        
+        output_tensor.scatter_(1, to_add, softmax2)   
+
+        print(torch.argmax(output_tensor, dim=1))     
 
         return output_tensor
 
@@ -165,7 +169,7 @@ class ImageClassification(MicroMind):
         if self.hparams.opt == "adam":
             #print(list(self.modules.parameters()))
             #opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
-            opt = torch.optim.Adam([self.modifier_bias], self.hparams.lr)
+            opt = torch.optim.Adam([self.modifier_bias, self.modifier_shift], self.hparams.lr)
             sched = torch.optim.lr_scheduler.StepLR(opt, step_size=20, gamma=0.1)
             #sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
         elif self.hparams.opt == "sgd":
