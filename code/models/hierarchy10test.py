@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-model_path = "./pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+model_path = "./pretrained/pretrained/epoch_165_val_loss_0.9951.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -37,7 +37,7 @@ class ImageClassification(MicroMind):
         # t_zero: 4.0
 
         self.modules["feature_extractor"] = PhiNet(
-            input_shape=(3, 240, 240),
+            input_shape=(3, 160, 160),
             alpha=0.9,
             num_layers=7,
             beta=0.5,
