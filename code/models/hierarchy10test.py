@@ -65,7 +65,7 @@ class ImageClassification(MicroMind):
         self.modules["classifier"] = nn.Sequential(
             nn.Linear(in_features=self.input, out_features=self.output)    
         )
-        self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
+        # self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
 
     def forward(self, batch):
 
