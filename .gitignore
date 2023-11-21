@@ -20,3 +20,5 @@ code/wandb/*
 !code/results/nnmf_sig
 !code/results/pca
 !code/results/pca_best
+!code/results/hierarchy_10_10
+!code/results/hierarchy_10_10/0/save/epoch_27_val_loss_0.7234.ckpt
