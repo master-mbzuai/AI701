@@ -174,7 +174,7 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
                     #self.targets.extend(entry["coarse_labels"])
                 else:
                     #self.targets.extend(entry["fine_labels"])
-                    self.targets.extend([complete_mapping[x] for x in entry["fine_labels"]])                    
+                    self.targets.extend([complete_mapping[x] for x in entry["fine_labels"]])
 
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
@@ -189,8 +189,7 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             data = pickle.load(infile, encoding="latin1")
             #print(data['fine_label_names'])
             if(self.coarse):
-                #self.classes = data['coarse_label_names']
-                #print(self.classes)
+                #self.classes = data['coarse_label_names']                
                 self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
             else:
                 self.classes = data['fine_label_names']

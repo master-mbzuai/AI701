@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-model_path = "./pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -50,7 +50,7 @@ class ImageClassification(MicroMind):
         )
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load(model_path, map_location='cpu')
+        pretrained_dict = torch.load(model_path, map_location=device)
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
@@ -72,10 +72,8 @@ class ImageClassification(MicroMind):
         feature_vector = self.modules["feature_extractor"](batch[0])
         x = self.modules["flattener"](feature_vector)
         x = self.modules["classifier"](x)
-
         indices_1 = torch.argmax(x, dim=1)
         indices_np = indices_1.to('cpu').numpy()
-
         test= batch[1].to('cpu').numpy()
         # print(test)
         # print(indices_np)
