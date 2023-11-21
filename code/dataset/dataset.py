@@ -196,7 +196,7 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
         Returns:
             tuple: (image, target) where target is index of the target class.
         """
-        img, target = self.data[inverse_complete[index]], self.targets[inverse_complete[index]]
+        img, target = self.data[index], inverse_complete[self.targets[index]]
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
