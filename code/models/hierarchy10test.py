@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -28,7 +28,7 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 10
 
-        self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)        
+        self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)
 
         # alpha: 0.9
         # beta: 0.5
@@ -50,11 +50,11 @@ class ImageClassification(MicroMind):
         )
 
         # Taking away the classifier from pretrained model
-        pretrained_dict = torch.load(model_path, map_location=device)  
+        pretrained_dict = torch.load(model_path, map_location='cpu')
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
-        for _, param in self.modules["feature_extractor"].named_parameters():                
+        for _, param in self.modules["feature_extractor"].named_parameters():
             param.requires_grad = False
 
         self.modules["flattener"] = nn.Sequential(
@@ -64,14 +64,12 @@ class ImageClassification(MicroMind):
 
         self.modules["classifier"] = nn.Sequential(
             nn.Linear(in_features=self.input, out_features=self.output)    
-        )                
+        )
         self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
-        # for _, param in self.modules["classifier"].named_parameters():    
-        #     #param.requires_grad = False 
 
-    def forward(self, batch):     
+    def forward(self, batch):
 
-        feature_vector = self.modules["feature_extractor"](batch[0]) 
+        feature_vector = self.modules["feature_extractor"](batch[0])
         x = self.modules["flattener"](feature_vector)
         x = self.modules["classifier"](x)
 
@@ -87,7 +85,7 @@ class ImageClassification(MicroMind):
         #print(torch.tensor(indices_1.tolist() == batch[1]).sum()/len(indices_1))
 
         return x
-       
+
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
     

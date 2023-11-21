@@ -1,19 +1,11 @@
-from micromind import MicroMind, Metric
+from micromind import MicroMind
 from micromind.networks import PhiNet
-from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
 import numpy as np
 
-from huggingface_hub import hf_hub_download
-
-# REPO_ID = "micromind/ImageNet"
-# FILENAME = "v7/state_dict.pth.tar"
-
-# model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
-
-model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -46,15 +38,12 @@ class ImageClassification(MicroMind):
 
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
-
         print("YES YOU ARE AMAZING")
 
         self.input = 344
         self.output = 10
 
         self.modifier_bias = nn.Parameter(torch.randn(self.output, self.input)).to(device)
-        # Create a tensor of indices
-        self.indices = torch.arange(10, dtype=torch.int32).to(device)
 
         # alpha: 0.9
         # beta: 0.5
@@ -63,13 +52,13 @@ class ImageClassification(MicroMind):
         # t_zero: 4.0
 
         self.modules["feature_extractor"] = PhiNet(
-            input_shape=(3, 160, 160),
+            input_shape=(3, 240, 240),
             alpha=0.9,
             num_layers=7,
             beta=0.5,
             t_zero=4.0,
             include_top=False,
-            num_classes=1000,
+            num_classes=100,
             compatibility=False,
             divisor=8,
             downsampling_layers=[4,5,7]
@@ -77,19 +66,15 @@ class ImageClassification(MicroMind):
 
         # Taking away the classifier from pretrained model
         pretrained_dict = torch.load(model_path, map_location=device)
-        model_dict = {}
-        for k, v in pretrained_dict.items():
-            if "classifier" not in k:
-                model_dict[k] = v
 
         #loading the new model
         self.modules["feature_extractor"].load_state_dict(pretrained_dict["feature_extractor"])        
-        for _, param in self.modules["feature_extractor"].named_parameters():    
-            param.requires_grad = False 
+        for _, param in self.modules["feature_extractor"].named_parameters():
+            param.requires_grad = False
 
         self.modules["flattener"] = nn.Sequential(
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),                   
+            nn.AdaptiveAvgPool2d((1, 1)),
+            nn.Flatten()
         )
 
         self.modules["classifier"] = nn.Sequential(
@@ -97,22 +82,19 @@ class ImageClassification(MicroMind):
         )
         self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
         for _, param in self.modules["classifier"].named_parameters():    
-            param.requires_grad = False 
-
+            param.requires_grad = False
 
     def forward(self, batch):
 
-        print(batch[1])
-
         feature_vector = self.modules["feature_extractor"](batch[0])
-        feature_vector = self.modules["flattener"](feature_vector)            
-        x = self.modules["classifier"](feature_vector)
+        x = self.modules["flattener"](feature_vector)
+        x = self.modules["classifier"](x)
 
         # tensor([[0., 0., 0., 0., 0., 1., 0., 0., 0., 0.], 64 x 10              
         #softmax = DiffSoftmax(logits=x, tau=1.0, hard=True, dim=1)
         indices_1 = torch.argmax(x, dim=1)
 
-        test = np.array([clustering_mapping[y] for y in indices_1.to('cpu').tolist()])
+        test = np.array([clustering_mapping[y] for y in batch[1].to('cpu').tolist()])
         indices_np = indices_1.to('cpu').numpy()
 
         print(test)
@@ -235,9 +217,9 @@ class ImageClassification(MicroMind):
             "sgd",
         ], f"Optimizer {self.hparams.opt} not supported."
         if self.hparams.opt == "adam":
-            opt = torch.optim.Adam([self.modifier_bias], self.hparams.lr)
+            opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
             sched = torch.optim.lr_scheduler.StepLR(opt, step_size=20, gamma=0.1)
             #sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
         elif self.hparams.opt == "sgd":
-            opt = torch.optim.SGD([self.modifier_bias], self.hparams.lr)
+            opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
         return opt, sched

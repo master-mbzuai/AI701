@@ -127,9 +127,6 @@ if __name__ == "__main__":
         num_workers=1,
     )
 
-    # if(hparams.model_name != "hierarchy100" or hparams.model_name != "hierarchy10"):
-    #     save_parameters(m, hparams)
-
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 
     epochs = hparams.epochs 
