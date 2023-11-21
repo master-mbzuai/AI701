@@ -4,6 +4,7 @@ from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
+import numpy as np
 
 from huggingface_hub import hf_hub_download
 
@@ -12,7 +13,7 @@ from huggingface_hub import hf_hub_download
 
 # model_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, local_dir="./pretrained")
 
-model_path = "./code/pretrained/hierarchy10/epoch_16_val_loss_0.7207.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -35,6 +36,8 @@ def DiffSoftmax(logits, tau=1.0, hard=False, dim=-1):
         # Reparametrization trick.
         ret = y_soft
     return ret
+
+clustering_mapping = {1: 0, 4: 0, 30: 0, 32: 0, 55: 0, 67: 0, 72: 0, 73: 0, 91: 0, 95: 0, 47: 1, 52: 1, 54: 1, 56: 1, 59: 1, 62: 1, 70: 1, 82: 1, 92: 1, 96: 1, 0: 2, 9: 2, 10: 2, 16: 2, 28: 2, 51: 2, 53: 2, 57: 2, 61: 2, 83: 2, 5: 3, 20: 3, 22: 3, 25: 3, 39: 3, 40: 3, 84: 3, 86: 3, 87: 3, 94: 3, 6: 4, 7: 4, 14: 4, 18: 4, 24: 4, 26: 4, 45: 4, 77: 4, 79: 4, 99: 4, 12: 5, 17: 5, 23: 5, 33: 5, 37: 5, 49: 5, 60: 5, 68: 5, 71: 5, 76: 5, 3: 6, 15: 6, 19: 6, 21: 6, 31: 6, 38: 6, 42: 6, 43: 6, 88: 6, 97: 6, 34: 7, 36: 7, 50: 7, 63: 7, 64: 7, 65: 7, 66: 7, 74: 7, 75: 7, 80: 7, 8: 8, 13: 8, 41: 8, 48: 8, 58: 8, 69: 8, 81: 8, 85: 8, 89: 8, 90: 8, 2: 9, 11: 9, 27: 9, 29: 9, 35: 9, 44: 9, 46: 9, 78: 9, 93: 9, 98: 9}
 
 class ImageClassification(MicroMind):
 
@@ -91,7 +94,7 @@ class ImageClassification(MicroMind):
 
         self.modules["classifier"] = nn.Sequential(
             nn.Linear(in_features=self.input, out_features=self.output)    
-        )                
+        )
         self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
         for _, param in self.modules["classifier"].named_parameters():    
             param.requires_grad = False 
@@ -108,6 +111,16 @@ class ImageClassification(MicroMind):
         # tensor([[0., 0., 0., 0., 0., 1., 0., 0., 0., 0.], 64 x 10              
         #softmax = DiffSoftmax(logits=x, tau=1.0, hard=True, dim=1)
         indices_1 = torch.argmax(x, dim=1)
+
+        test = np.array([clustering_mapping[y] for y in indices_1.to('cpu').tolist()])
+        indices_np = indices_1.to('cpu').numpy()
+
+        print(test)
+        print(indices_np)
+        print(test == indices_np)
+        print((test == indices_np).sum(0))
+
+        print(torch.tensor(indices_1.tolist() == test).sum()/len(indices_1))
         
         #broadcasted_bias = self.modifier_bias.unsqueeze(0).expand(len(batch[0]),-1,-1)
 
@@ -140,7 +153,7 @@ class ImageClassification(MicroMind):
         output_tensor = torch.zeros(len(batch[0]), 100, device=device)
 
         # # Use 'torch.arange' and 'torch.stack' for creating the sequence tensors
-        to_add = torch.stack([torch.arange(start[i], end[i], device=device) for i in range(len(indices_1))])        
+        to_add = torch.stack([torch.arange(start[i], end[i], device=device) for i in range(len(indices_1))])
 
         output_tensor.scatter_(1, to_add, softmax2)        
 
@@ -205,8 +218,6 @@ class ImageClassification(MicroMind):
     def compute_loss(self, pred, batch):
         return nn.CrossEntropyLoss()(pred, batch[1])
     
-
-    
     def configure_optimizers(self):
         """Configures and defines the optimizer for the task. Defaults to adam
         with lr=0.001; It can be overwritten by either passing arguments from the
@@ -224,9 +235,9 @@ class ImageClassification(MicroMind):
             "sgd",
         ], f"Optimizer {self.hparams.opt} not supported."
         if self.hparams.opt == "adam":
-            opt = torch.optim.Adam(self.modules.parameters(), self.hparams.lr)
+            opt = torch.optim.Adam([self.modifier_bias], self.hparams.lr)
             sched = torch.optim.lr_scheduler.StepLR(opt, step_size=20, gamma=0.1)
             #sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.1, patience=5, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=False)
         elif self.hparams.opt == "sgd":
-            opt = torch.optim.SGD(self.modules.parameters(), self.hparams.lr)
+            opt = torch.optim.SGD([self.modifier_bias], self.hparams.lr)
         return opt, sched
