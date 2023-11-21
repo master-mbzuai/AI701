@@ -170,7 +170,8 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
                 print(entry["coarse_labels"][:100])                
 
                 if(self.coarse):
-                    self.targets.extend([clustering_mapping[complete_mapping[x]] for x in entry["fine_labels"]])
+                    #self.targets.extend([clustering_mapping[complete_mapping[x]] for x in entry["fine_labels"]])
+                    self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
                     #self.targets.extend(entry["coarse_labels"])
                 else:
                     #self.targets.extend(entry["fine_labels"])
