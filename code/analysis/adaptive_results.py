@@ -24,7 +24,7 @@ def read_architecture(file_path):
 
         if section:
             macs_match = re.search(r'MACs (\d+\.\d+)', line)
-            params_match = re.search(r'learnable parameters (\d+\.\d+ k|\d+)', line)
+            params_match = re.search(r'learnable parameters (\d+\.\d+ k|\d+)', line)            
 
             if macs_match:
                 result[section + '_MACs'] = macs_match.group(1)
@@ -34,88 +34,148 @@ def read_architecture(file_path):
     return result
     
 
-def read_results(file_path):
+def read_results(file_path):    
+
     with open(file_path, 'r') as f:
-        print("ciaooo")
-        line = f.readlines()[-1]
-        #accuracy_match = r'\d+\.\d+'
-        #Epoch 99: train_accuracy: 0.62 - train_loss: 2.19 - lr: 0.00; val_accuracy: 0.7174 - val_loss: 1.1699.
+        
+        best = [0,0,0,0,0]
 
-        match = r'Epoch (\d+): train_accuracy: (\d+\.\d+) - train_loss: (\d+\.\d+) - lr: 0.00; val_accuracy: (\d+\.\d+) - val_loss: (\d+\.\d+).'
+        lines = f.readlines()
+        for line in lines:
+            #accuracy_match = r'\d+\.\d+'
+            #Epoch 99: train_accuracy: 0.62 - train_loss: 2.19 - lr: 0.00; val_accuracy: 0.7174 - val_loss: 1.1699.
 
-        matches = re.findall(match, line)        
-        return matches[0][3:]
+            match = r'Epoch (\d+): train_accuracy: (\d+\.\d+) - train_loss: (\d+\.\d+) - lr: 0.00; val_accuracy: (\d+\.\d+) - val_loss: (\d+\.\d+).'
+
+            matches = re.findall(match, line)       
+            #print(matches)       
+
+            if(float(matches[0][3]) > float(best[3])):
+                best = matches[0]
+
+        #print(best)            
+        return best[3:]
     
 
 if __name__ == "__main__":
 
     results = {}
-    path = "../results/pca/"
+    #paths = ["../results/adaptive_base/", "../results/adaptive_relu/"]
+    paths = ["../results/adaptive_base/", "../results/adaptive_relu/", "../results/nnmf_base/"]
+    #paths = ["../results/lasso/"]
 
-    for folder in os.listdir(path):      
-        # fix this and make better code
-        #if folder in ["0", "10","25","50","75","90"]:
-        print(folder)
-        #folder = [x for x in folder if "." not in x]  
-        results[folder] = {}
-        for exp in os.listdir(path + folder):                        
-            if("architecture.txt" == exp):                
-                meta = read_architecture(path + folder + "/" + exp)                
-                results[folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]                
-                quantity = meta["CLASSIFIER_MACs"]                
+    for path in paths:
+        results[path] = {}    
 
-                quantity2 = meta["BACKBONE_MACs"]                
+    for path in paths:
+        for folder in os.listdir(path):      
+            # fix this and make better code
+            #if folder in ["0", "10","25","50","75","90"]:            
+            #folder = [x for x in folder if "." not in x]  
+            results[path][folder] = {}
+            for exp in os.listdir(path + folder):                        
+                if("architecture.txt" == exp):                
+                    meta = read_architecture(path + folder + "/" + exp)      
+                    print(meta)          
+                    results[path][folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]   
+                    quantity = meta["CLASSIFIER_MACs"]
 
-                results[folder]["mac_all"] = str(float(quantity) + float(quantity2))
+                    quantity2 = meta["BACKBONE_MACs"]                
 
-            elif("train_log.txt" == exp):
-                accuracy, loss = read_results(path + folder + "/" + exp)
-                results[folder]["accuracy"] = accuracy
-                results[folder]["loss"] = loss
+                    results[path][folder]["mac_all"] = str(float(quantity) + float(quantity2))
 
-    data = {k: v for k, v in sorted(results.items(), key=lambda item: item[0], reverse=False)}    
+                if("train_log.txt" == exp):
+                    accuracy, loss = read_results(path + folder + "/" + exp)
+                    results[path][folder]["accuracy"] = accuracy
+                    results[path][folder]["loss"] = loss
 
-    print(data)
-
-    # Extract numbers, accuracies, and parameters from the data
-    numbers = [int(key) for key in data.keys()]
-    accuracies = [float(data[key]['accuracy']) for key in data.keys()]
-    params = [float(data[key]['mac_classifier'].split()[0])*0.01 for key in data.keys()]  # Assuming KMac, so multiplied by 1000
-
-    # Choose the colormap
-    colormap = plt.cm.viridis
-
-    # Normalize y-values between 0 and 1
-    norm = mcolors.Normalize(vmin=min(params), vmax=max(params))
-
-    dot_colors = [colormap(norm(value)) for value in params]
+        data = {k: v for k, v in sorted(results.items(), key=lambda item: item[0], reverse=False)}    
 
 
-    # Sort by numbers for better plotting
-    sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
-    numbers = [numbers[i] for i in sorted_indices]
-    accuracies = [accuracies[i] for i in sorted_indices]
-    params = [params[i] for i in sorted_indices]
 
-    # Create the scatter plot
-    plt.scatter(numbers, accuracies, s=params, alpha=0.5, c=dot_colors, label='Parameters')
+    highest_accuracy = 0
 
-    # Labeling each point with the corresponding number
-    for i, txt in enumerate(params):
-        plt.annotate(txt, (numbers[i], accuracies[i]))
+    for key in data.keys():
+        print(key)
+        print(data[key])
+        numbers = [int(key) for key in data[key].keys()]
+        accuracies = [float(data[key][key2]['accuracy']) for key2 in data[key].keys()]
+        print(accuracies)
+        params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+        params = [float(data[key][key2]['mac_classifier'].split()[0])*0.001 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
 
-    if(alpha > 10):
-        alpha_title = str(alpha/10)
-    else:
-        alpha_title = str(alpha)
+        # # Sort by numbers for better plotting
+        sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
+        numbers = [numbers[i] for i in sorted_indices]
+        accuracies = [accuracies[i] for i in sorted_indices]
+        params = [params[i] for i in sorted_indices]
 
-    plt.axhline(accuracies[0], color='orange', linestyle='--')
-    plt.text(40, accuracies[0]-0.007, "Baseline", color='orange')
+        if(accuracies[0] > highest_accuracy):
+            highest_accuracy = accuracies[0]
+
+        # Labeling each point with the corresponding number
+        for i, txt in enumerate(params):
+            plt.annotate(txt, (numbers[i], accuracies[i]))
+        
+        plt.scatter(numbers, accuracies, alpha=0.5, s=params_s, label='Parameters')
+
+    plt.axhline(highest_accuracy, color='orange', linestyle='--')
+        
+    legends = [key.split("/")[-2] for key in data.keys()]
+
+    plt.legend(legends)
+
+    
+
+    plt.text(40, accuracies[0]+0.02, "Baseline", color='orange')
     plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
-    plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 100 epochs')
+    plt.title('Accuracy vs Compression - d - 100 epochs')
     plt.xlabel('Number')
     plt.ylabel('Accuracy')
-    plt.colorbar(label='Parameters (KMac)')
+    #plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig(path + "image.jpg")
+    plt.savefig("../results/_images/" + "-".join(legends) + ".jpg")
     plt.show()    
+
+    # # Extract numbers, accuracies, and parameters from the data
+    # numbers = [int(key) for key in data.keys()]
+    # accuracies = [float(data[key]['accuracy']) for key in data.keys()]
+    # params = [float(data[key]['mac_classifier'].split()[0])*0.01 for key in data.keys()]  # Assuming KMac, so multiplied by 1000
+
+    # # Choose the colormap
+    # colormap = plt.cm.viridis
+
+    # # Normalize y-values between 0 and 1
+    # norm = mcolors.Normalize(vmin=min(params), vmax=max(params))
+
+    # dot_colors = [colormap(norm(value)) for value in params]
+
+
+    # # Sort by numbers for better plotting
+    # sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
+    # numbers = [numbers[i] for i in sorted_indices]
+    # accuracies = [accuracies[i] for i in sorted_indices]
+    # params = [params[i] for i in sorted_indices]
+
+    # # Create the scatter plot
+    # plt.scatter(numbers, accuracies, s=params, alpha=0.5, c=dot_colors, label='Parameters')
+
+    # # Labeling each point with the corresponding number
+    # for i, txt in enumerate(params):
+    #     plt.annotate(txt, (numbers[i], accuracies[i]))
+
+    # if(alpha > 10):
+    #     alpha_title = str(alpha/10)
+    # else:
+    #     alpha_title = str(alpha)
+
+    # plt.axhline(accuracies[0], color='orange', linestyle='--')
+    # plt.text(40, accuracies[0]-0.007, "Baseline", color='orange')
+    # plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
+    # plt.title('Accuracy vs Compression - alpha ' + alpha_title + ' - 100 epochs')
+    # plt.xlabel('Number')
+    # plt.ylabel('Accuracy')
+    # plt.colorbar(label='Parameters (KMac)')
+    # plt.grid(True)
+    # #plt.savefig(path + "image.jpg")
+    # plt.show()    

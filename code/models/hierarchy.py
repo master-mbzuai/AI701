@@ -5,13 +5,6 @@ from micromind.utils.parse import parse_arguments
 import torch
 import torch.nn as nn
 
-from graphviz import Digraph
-import torch
-from torch.autograd import Variable
-
-# make_dot was moved to https://github.com/szagoruyko/pytorchviz
-from torchviz import make_dot
-
 from huggingface_hub import hf_hub_download
 
 REPO_ID = "micromind/ImageNet"

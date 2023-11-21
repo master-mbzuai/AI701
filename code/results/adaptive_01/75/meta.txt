@@ -1,1 +1,0 @@
-Namespace(d=75, debug=False, epochs=100, experiment_name='adaptive_01/75/', lr=0.0001, model_name='adaptive', opt='adam', output_folder='results')

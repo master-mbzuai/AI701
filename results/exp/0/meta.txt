@@ -1,1 +1,0 @@
-Namespace(d=0, debug=False, epochs=50, experiment_name='exp/0/', lr=0.001, model_name='original', opt='adam', output_folder='results')

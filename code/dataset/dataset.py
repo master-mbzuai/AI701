@@ -100,6 +100,28 @@ print(i)
 #clustering_mapping = {0: 5, 1: 5, 2: 3, 3: 7, 4: 7, 5: 4, 6: 6, 7: 6, 8: 8, 9: 3, 10: 4, 11: 3, 12: 0, 13: 8, 14: 6, 15: 7, 16: 4, 17: 0, 18: 6, 19: 7, 20: 3, 21: 7, 22: 4, 23: 0, 24: 6, 25: 4, 26: 5, 27: 1, 28: 4, 29: 2, 30: 1, 31: 7, 32: 3, 33: 2, 34: 9, 35: 3, 36: 3, 37: 8, 38: 9, 39: 0, 40: 3, 41: 8, 42: 9, 43: 9, 44: 5, 45: 5, 46: 3, 47: 2, 48: 8, 49: 0, 50: 9, 51: 2, 52: 2, 53: 5, 54: 6, 55: 7, 56: 2, 57: 5, 58: 8, 59: 2, 60: 0, 61: 4, 62: 6, 63: 9, 64: 7, 65: 9, 66: 7, 67: 1, 68: 0, 69: 0, 70: 6, 71: 0, 72: 1, 73: 1, 74: 1, 75: 7, 76: 0, 77: 1, 78: 5, 79: 6, 80: 9, 81: 8, 82: 2, 83: 5, 84: 4, 85: 8, 86: 4, 87: 4, 88: 9, 89: 8, 90: 8, 91: 1, 92: 6, 93: 1, 94: 2, 95: 1, 96: 2, 97: 9, 98: 3, 99: 5}
 clustering_mapping = {1: 0, 4: 0, 30: 0, 32: 0, 55: 0, 67: 0, 72: 0, 73: 0, 91: 0, 95: 0, 47: 1, 52: 1, 54: 1, 56: 1, 59: 1, 62: 1, 70: 1, 82: 1, 92: 1, 96: 1, 0: 2, 9: 2, 10: 2, 16: 2, 28: 2, 51: 2, 53: 2, 57: 2, 61: 2, 83: 2, 5: 3, 20: 3, 22: 3, 25: 3, 39: 3, 40: 3, 84: 3, 86: 3, 87: 3, 94: 3, 6: 4, 7: 4, 14: 4, 18: 4, 24: 4, 26: 4, 45: 4, 77: 4, 79: 4, 99: 4, 12: 5, 17: 5, 23: 5, 33: 5, 37: 5, 49: 5, 60: 5, 68: 5, 71: 5, 76: 5, 3: 6, 15: 6, 19: 6, 21: 6, 31: 6, 38: 6, 42: 6, 43: 6, 88: 6, 97: 6, 34: 7, 36: 7, 50: 7, 63: 7, 64: 7, 65: 7, 66: 7, 74: 7, 75: 7, 80: 7, 8: 8, 13: 8, 41: 8, 48: 8, 58: 8, 69: 8, 81: 8, 85: 8, 89: 8, 90: 8, 2: 9, 11: 9, 27: 9, 29: 9, 35: 9, 44: 9, 46: 9, 78: 9, 93: 9, 98: 9}
 
+for x in range(10):
+    classes_in_parent[x] = []
+
+for x in clustering_mapping.keys():
+    classes_in_parent[clustering_mapping[x]].append(x)
+
+#print(classes_in_parent)
+
+complete_mapping = {}
+
+i = 0
+
+for x in classes_in_parent.keys():
+    for y in classes_in_parent[x]:
+        complete_mapping[y] = i
+        i+=1
+
+#print(complete_mapping)
+
+# say that element 1-9-14-78 goes to class 0
+
+# I need to remap 1-1, 2-9, 3-14, 4-78
 #custom_classes = [x for x in new_class_hierarchy.keys()]
 #custom_classes = [x for x in clustering_mapping.keys()]
 
@@ -147,10 +169,10 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
 
                 if(self.coarse):
                     self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
-                    print("OOK")
                     #self.targets.extend(entry["coarse_labels"])
                 else:
-                    self.targets.extend([mapping[x] for x in entry["fine_labels"]])
+                    complete_mapping
+                    self.targets.extend([complete_mapping[x] for x in entry["fine_labels"]])
 
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
@@ -169,6 +191,6 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
                 #print(self.classes)
                 self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
             else:
-                self.classes = classes_for_parent_index.keys()
+                self.classes = data['fine_label_names']
 
         self.class_to_idx = {_class: i for i, _class in enumerate(self.classes)}
