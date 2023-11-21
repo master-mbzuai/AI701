@@ -105,7 +105,7 @@ inverse_complete = {}
 for x in complete_mapping.keys():
     inverse_complete[complete_mapping[x]] = x
 
-print(inverse_complete)
+
 
 
 # for x in range(10):
