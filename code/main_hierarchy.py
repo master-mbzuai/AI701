@@ -84,8 +84,8 @@ if __name__ == "__main__":
             tmp = (pred.argmax(1) == batch[1].argmax(1)).float()
         return tmp
     
-    cutmix = v2.CutMix(num_classes=10, alpha=0.5)
-    mixup = v2.MixUp(num_classes=10, alpha=0.5)
+    cutmix = v2.CutMix(num_classes=100, alpha=0.5)
+    mixup = v2.MixUp(num_classes=100, alpha=0.5)
     cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
 
     def collate_fn(batch):
@@ -109,25 +109,25 @@ if __name__ == "__main__":
         ] 
     )
     trainset = dataset.CIFAR100CUSTOM(
-        root="data/cifar-100", train=True, download=True, transform=train_transform, coarse=True
+        root="data/cifar-100", train=True, download=True, transform=train_transform, coarse=False
     )
     testset = dataset.CIFAR100CUSTOM(
-        root="data/cifar-100", train=False, download=True, transform=transform, coarse=True
+        root="data/cifar-100", train=False, download=True, transform=transform, coarse=False
     )
 
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=8,
-        collate_fn=collate_fn
+        num_workers=1,
+        #collate_fn=collate_fn
     )
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8,
+        num_workers=1,
     )
 
-    if(hparams.model_name != "hierarchy10"):
+    if(hparams.model_name != "hierarchy100"):
         save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    

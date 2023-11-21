@@ -96,9 +96,34 @@ from torchvision.datasets.utils import check_integrity
 #clustering_mapping = {0: 0, 57: 0, 83: 0, 53: 0, 10: 0, 92: 0, 40: 0, 77: 0, 22: 0, 61: 0, 2: 1, 11: 1, 35: 1, 98: 1, 46: 1, 32: 1, 36: 1, 65: 1, 25: 1, 50: 1, 4: 2, 55: 2, 72: 2, 74: 2, 3: 2, 63: 2, 27: 2, 64: 2, 80: 2, 21: 2, 7: 3, 24: 3, 79: 3, 6: 3, 14: 3, 18: 3, 44: 3, 26: 3, 45: 3, 93: 3, 12: 4, 37: 4, 90: 4, 76: 4, 17: 4, 85: 4, 68: 4, 69: 4, 81: 4, 5: 4, 16: 5, 9: 5, 28: 5, 86: 5, 94: 5, 87: 5, 88: 5, 66: 5, 84: 5, 41: 5, 23: 6, 71: 6, 49: 6, 60: 6, 73: 6, 67: 6, 30: 6, 43: 6, 33: 6, 39: 6, 31: 7, 19: 7, 15: 7, 29: 7, 38: 7, 97: 7, 75: 7, 59: 7, 96: 7, 13: 7, 52: 8, 47: 8, 56: 8, 82: 8, 42: 8, 70: 8, 91: 8, 51: 8, 58: 8, 89: 8, 99: 9, 78: 9, 8: 9, 95: 9, 34: 9, 1: 9, 48: 9, 20: 9, 54: 9, 62: 9}
 #clustering_mapping = {79: 0, 47: 0, 8: 0, 46: 0, 24: 0, 70: 0, 52: 0, 54: 0, 20: 0, 41: 0, 69: 1, 11: 1, 59: 1, 68: 1, 7: 1, 60: 1, 35: 1, 33: 1, 96: 1, 17: 1, 82: 2, 37: 2, 99: 2, 18: 2, 40: 2, 19: 2, 6: 2, 89: 2, 53: 2, 12: 2, 2: 3, 98: 3, 92: 3, 14: 3, 5: 3, 57: 3, 81: 3, 9: 3, 86: 3, 25: 3, 15: 4, 29: 4, 23: 4, 49: 4, 90: 4, 62: 4, 44: 4, 56: 4, 71: 4, 84: 4, 16: 5, 22: 5, 0: 5, 45: 5, 39: 5, 28: 5, 77: 5, 91: 5, 43: 5, 87: 5, 76: 6, 31: 6, 58: 6, 38: 6, 34: 6, 42: 6, 65: 6, 36: 6, 13: 6, 85: 6, 26: 7, 48: 7, 61: 7, 83: 7, 78: 7, 94: 7, 88: 7, 75: 7, 64: 7, 1: 7, 30: 8, 97: 8, 73: 8, 32: 8, 50: 8, 66: 8, 95: 8, 93: 8, 27: 8, 3: 8, 51: 9, 10: 9, 21: 9, 74: 9, 55: 9, 72: 9, 67: 9, 4: 9, 63: 9, 80: 9}
 #clustering_mapping = {69: 0, 12: 0, 54: 0, 76: 0, 97: 0, 64: 0, 9: 0, 85: 0, 73: 0, 47: 0, 74: 1, 45: 1, 6: 1, 4: 1, 26: 1, 36: 1, 17: 1, 81: 1, 82: 1, 33: 1, 48: 2, 98: 2, 77: 2, 16: 2, 67: 2, 80: 2, 95: 2, 0: 2, 99: 2, 83: 2, 51: 3, 75: 3, 44: 3, 79: 3, 13: 3, 41: 3, 28: 3, 24: 3, 63: 3, 34: 3, 35: 4, 56: 4, 37: 4, 84: 4, 2: 4, 15: 4, 87: 4, 10: 4, 88: 4, 89: 4, 61: 5, 42: 5, 43: 5, 30: 5, 70: 5, 62: 5, 91: 5, 68: 5, 19: 5, 55: 5, 53: 6, 27: 6, 7: 6, 60: 6, 22: 6, 86: 6, 20: 6, 8: 6, 38: 6, 49: 6, 92: 7, 93: 7, 94: 7, 72: 7, 40: 7, 58: 7, 1: 7, 96: 7, 21: 7, 29: 7, 52: 8, 18: 8, 5: 8, 11: 8, 59: 8, 71: 8, 14: 8, 46: 8, 65: 8, 57: 8, 90: 9, 25: 9, 78: 9, 50: 9, 66: 9, 23: 9, 31: 9, 32: 9, 3: 9, 39: 9}
+# first layer mapping
 clustering_mapping = {0: 5, 1: 5, 2: 3, 3: 7, 4: 7, 5: 4, 6: 6, 7: 6, 8: 8, 9: 3, 10: 4, 11: 3, 12: 0, 13: 8, 14: 6, 15: 7, 16: 4, 17: 0, 18: 6, 19: 7, 20: 3, 21: 7, 22: 4, 23: 0, 24: 6, 25: 4, 26: 5, 27: 1, 28: 4, 29: 2, 30: 1, 31: 7, 32: 3, 33: 2, 34: 9, 35: 3, 36: 3, 37: 8, 38: 9, 39: 0, 40: 3, 41: 8, 42: 9, 43: 9, 44: 5, 45: 5, 46: 3, 47: 2, 48: 8, 49: 0, 50: 9, 51: 2, 52: 2, 53: 5, 54: 6, 55: 7, 56: 2, 57: 5, 58: 8, 59: 2, 60: 0, 61: 4, 62: 6, 63: 9, 64: 7, 65: 9, 66: 7, 67: 1, 68: 0, 69: 0, 70: 6, 71: 0, 72: 1, 73: 1, 74: 1, 75: 7, 76: 0, 77: 1, 78: 5, 79: 6, 80: 9, 81: 8, 82: 2, 83: 5, 84: 4, 85: 8, 86: 4, 87: 4, 88: 9, 89: 8, 90: 8, 91: 1, 92: 6, 93: 1, 94: 2, 95: 1, 96: 2, 97: 9, 98: 3, 99: 5}
 
+# second layer mapping -> 100 classes, index from 1 to 100, needs to be ordered according to their parent class
+classes_in_parent = {}
 
+for x in range(10):
+    classes_in_parent[x] = []
+
+for x in clustering_mapping.keys():
+    classes_in_parent[clustering_mapping[x]].append(x)
+
+#print(classes_in_parent)
+
+complete_mapping = {}
+
+i = 0
+
+for x in classes_in_parent.keys():
+    for y in classes_in_parent[x]:
+        complete_mapping[y] = i
+        i+=1
+
+#print(complete_mapping)
+
+# say that element 1-9-14-78 goes to class 0
+
+# I need to remap 1-1, 2-9, 3-14, 4-78
 #custom_classes = [x for x in new_class_hierarchy.keys()]
 custom_classes = [x for x in clustering_mapping.keys()]
 
@@ -144,10 +169,11 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
                 #print(entry["fine_labels"])
 
                 if(self.coarse):
-                    #self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
-                    self.targets.extend(entry["coarse_labels"])
+                    self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
+                    #self.targets.extend(entry["coarse_labels"])
                 else:
-                    self.targets.extend([mapping[x] for x in entry["fine_labels"]])
+                    complete_mapping
+                    self.targets.extend([complete_mapping[x] for x in entry["fine_labels"]])
 
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
@@ -162,9 +188,9 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             data = pickle.load(infile, encoding="latin1")
             #print(data['fine_label_names'])
             if(self.coarse):
-                self.classes = data['coarse_label_names']
-                #self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
+                #self.classes = data['coarse_label_names']
+                self.classes = ["aquatic", "plants", "food", "houshold", "insects", "outdoor_scenes", "large_animals", "medium_animals", "vehicles", "other"]
             else:
-                self.classes = classes_for_parent_index.keys()
+                self.classes = data['fine_label_names']
 
         self.class_to_idx = {_class: i for i, _class in enumerate(self.classes)}
