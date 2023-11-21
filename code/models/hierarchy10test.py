@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-model_path = "./pretrained/finetuned/epoch_165_val_loss_0.9951.ckpt"
+model_path = "../pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -65,7 +65,7 @@ class ImageClassification(MicroMind):
         self.modules["classifier"] = nn.Sequential(
             nn.Linear(in_features=self.input, out_features=self.output)    
         )
-        # self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
+        self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
 
     def forward(self, batch):
 
