@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-model_path = "./code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt"
+model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
