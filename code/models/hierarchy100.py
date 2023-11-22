@@ -24,8 +24,7 @@ else:
     device = torch.device("cpu")
     print("Running on the CPU")
 
-clustering_mapping = {1: 0, 4: 0, 30: 0, 32: 0, 55: 0, 67: 0, 72: 0, 73: 0, 91: 0, 95: 0, 47: 1, 52: 1, 54: 1, 56: 1, 59: 1, 62: 1, 70: 1, 82: 1, 92: 1, 96: 1, 0: 2, 9: 2, 10: 2, 16: 2, 28: 2, 51: 2, 53: 2, 57: 2, 61: 2, 83: 2, 5: 3, 20: 3, 22: 3, 25: 3, 39: 3, 40: 3, 84: 3, 86: 3, 87: 3, 94: 3, 6: 4, 7: 4, 14: 4, 18: 4, 24: 4, 26: 4, 45: 4, 77: 4, 79: 4, 99: 4, 12: 5, 17: 5, 23: 5, 33: 5, 37: 5, 49: 5, 60: 5, 68: 5, 71: 5, 76: 5, 3: 6, 15: 6, 19: 6, 21: 6, 31: 6, 38: 6, 42: 6, 43: 6, 88: 6, 97: 6, 34: 7, 36: 7, 50: 7, 63: 7, 64: 7, 65: 7, 66: 7, 74: 7, 75: 7, 80: 7, 8: 8, 13: 8, 41: 8, 48: 8, 58: 8, 69: 8, 81: 8, 85: 8, 89: 8, 90: 8, 2: 9, 11: 9, 27: 9, 29: 9, 35: 9, 44: 9, 46: 9, 78: 9, 93: 9, 98: 9}
-complete_mapping   = {1: 0, 4: 1, 30: 2, 32: 3, 55: 4, 67: 5, 72: 6, 73: 7, 91: 8, 95: 9, 47: 10, 52: 11, 54: 12, 56: 13, 59: 14, 62: 15, 70: 16, 82: 17, 92: 18, 96: 19, 0: 20, 9: 21, 10: 22, 16: 23, 28: 24, 51: 25, 53: 26, 57: 27, 61: 28, 83: 29, 5: 30, 20: 31, 22: 32, 25: 33, 39: 34, 40: 35, 84: 36, 86: 37, 87: 38, 94: 39, 6: 40, 7: 41, 14: 42, 18: 43, 24: 44, 26: 45, 45: 46, 77: 47, 79: 48, 99: 49, 12: 50, 17: 51, 23: 52, 33: 53, 37: 54, 49: 55, 60: 56, 68: 57, 71: 58, 76: 59, 3: 60, 15: 61, 19: 62, 21: 63, 31: 64, 38: 65, 42: 66, 43: 67, 88: 68, 97: 69, 34: 70, 36: 71, 50: 72, 63: 73, 64: 74, 65: 75, 66: 76, 74: 77, 75: 78, 80: 79, 8: 80, 13: 81, 41: 82, 48: 83, 58: 84, 69: 85, 81: 86, 85: 87, 89: 88, 90: 89, 2: 90, 11: 91, 27: 92, 29: 93, 35: 94, 44: 95, 46: 96, 78: 97, 93: 98, 98: 99}
+clustering_mapping = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 2, 21: 2, 22: 2, 23: 2, 24: 2, 25: 2, 26: 2, 27: 2, 28: 2, 29: 2, 30: 3, 31: 3, 32: 3, 33: 3, 34: 3, 35: 3, 36: 3, 37: 3, 38: 3, 39: 3, 40: 4, 41: 4, 42: 4, 43: 4, 44: 4, 45: 4, 46: 4, 47: 4, 48: 4, 49: 4, 50: 5, 51: 5, 52: 5, 53: 5, 54: 5, 55: 5, 56: 5, 57: 5, 58: 5, 59: 5, 60: 6, 61: 6, 62: 6, 63: 6, 64: 6, 65: 6, 66: 6, 67: 6, 68: 6, 69: 6, 70: 7, 71: 7, 72: 7, 73: 7, 74: 7, 75: 7, 76: 7, 77: 7, 78: 7, 79: 7, 80: 8, 81: 8, 82: 8, 83: 8, 84: 8, 85: 8, 86: 8, 87: 8, 88: 8, 89: 8, 90: 9, 91: 9, 92: 9, 93: 9, 94: 9, 95: 9, 96: 9, 97: 9, 98: 9, 99: 9}
 
 
 def DiffSoftmax(logits, tau=1.0, hard=False, dim=-1):
@@ -106,15 +105,15 @@ class ImageClassification(MicroMind):
         # print("trut", test)
         # print("predicted", indices_1)
         test2 = np.array([clustering_mapping[y] for y in test])
-        print("trut_cluster", test)
-        print("predicted", indices_np)
-        print(test2 == indices_np )
-        print((test2 == indices_np).sum()/len(indices_1))        
-        print(test2)
-        print(indices_np)
-        print(test2 == indices_np)
-        print((test2 == indices_np).sum(0))
-        print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
+        # print("trut_cluster", test)
+        # print("predicted", indices_np)
+        # print(test2 == indices_np )
+        # print((test2 == indices_np).sum()/len(indices_1))        
+        # print(test2)
+        # print(indices_np)
+        # print(test2 == indices_np)
+        # print((test2 == indices_np).sum(0))
+        # print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
 
         feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
 
@@ -149,8 +148,8 @@ class ImageClassification(MicroMind):
         start = indices_1 * 10
         end = (indices_1 + 1) * 10
 
-        print(indices_1)
-        print(test2)
+        # print(indices_1)
+        # print(test2)
 
         output_tensor = torch.zeros(len(batch[0]), 100, device=device)
 
@@ -159,8 +158,8 @@ class ImageClassification(MicroMind):
 
         output_tensor.scatter_(1, to_add, softmax2)   
 
-        print(torch.argmax(output_tensor, dim=1))
-        print(test)
+        # print(torch.argmax(output_tensor, dim=1))
+        # print(test)
 
         return output_tensor
 
