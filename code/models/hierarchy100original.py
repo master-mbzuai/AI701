@@ -50,7 +50,7 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 10
 
-        self.modifier_weights = torch.randn(self.input * self.output, self.output, requires_grad=True, device=device)
+        self.modifier_weights = torch.randn(self.input, self.output, requires_grad=True, device=device)
         #self.modifier_bias = torch.randn(self.input, self.input, requires_grad=True, device=device)
         #self.modifier_bias.requires_grad = True
 
@@ -113,19 +113,21 @@ class ImageClassification(MicroMind):
         # print(indices_np)
         # print(test2 == indices_np)
         # print((test2 == indices_np).sum(0))
-        #print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
+        print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
 
-        feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
+        #feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
 
-        weights = torch.index_select(self.modifier_weights, 1, indices_1)      
+        weights = torch.index_select(self.modifier_weights, 1, indices_1)  
 
-        weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
+        shifted = weights * feature_vector    
+
+        #weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
         #print(weights)
 
         #bias = torch.index_select(self.modifier_bias, 0, indices_1)
         #shifted = torch.matmul(feature_vector, weights)
 
-        shifted = torch.bmm(feature_vector, weights).view(len(batch[0]), 10)
+        #shifted = torch.bmm(feature_vector, weights).view(len(batch[0]), 10)
 
         #last = self.modules["classifier"](shifted)
 
@@ -165,6 +167,7 @@ class ImageClassification(MicroMind):
 
 
     def compute_loss(self, pred, batch):        
+        print(batch[1])
         return nn.CrossEntropyLoss()(pred, batch[1])
     
     def configure_optimizers(self):

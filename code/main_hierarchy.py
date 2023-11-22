@@ -22,6 +22,7 @@ import platform
 if platform.system() == "Darwin":
     NUM_WORKERS = 1
 else:
+    print("YESS LINUX")
     NUM_WORKERS = 8
 
 batch_size = 64
