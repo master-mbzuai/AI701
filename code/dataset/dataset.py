@@ -179,7 +179,7 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
                 self.data.append(entry["data"])
                 print("PRE:", entry["fine_labels"][:100])                                
                 
-                #entry["fine_labels"] = [complete_mapping[x] for x in entry["fine_labels"]]           
+                entry["fine_labels"] = [complete_mapping[x] for x in entry["fine_labels"]]           
 
                 print("AFTER:", entry["fine_labels"][:100])                           
 
