@@ -69,7 +69,7 @@ class ImageClassification(MicroMind):
 
     def forward(self, batch):
         x = self.modules["feature_extractor"](batch[0])  
-        x = self.modules["classifier"](x)      
+        x = self.modules["classifier"](x)
         return x
 
     def compute_loss(self, pred, batch):
