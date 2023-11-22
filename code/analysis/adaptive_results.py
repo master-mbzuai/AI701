@@ -96,13 +96,13 @@ if __name__ == "__main__":
     highest_accuracy = 0
 
     for key in data.keys():
-        print(key)
-        print(data[key])
+        #print(key)
+        #print(data[key])
         numbers = [int(key) for key in data[key].keys()]
         accuracies = [float(data[key][key2]['accuracy']) for key2 in data[key].keys()]
-        print(accuracies)
-        params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
-        params = [float(data[key][key2]['mac_classifier'].split()[0])*0.001 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+        #print(accuracies)
+
+        params = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
 
         # # Sort by numbers for better plotting
         sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
@@ -110,14 +110,19 @@ if __name__ == "__main__":
         accuracies = [accuracies[i] for i in sorted_indices]
         params = [params[i] for i in sorted_indices]
 
+        # params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+        # params = [float(data[key][key2]['mac_classifier'].split()[0])*0.001 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+
         if(accuracies[0] > highest_accuracy):
             highest_accuracy = accuracies[0]
 
         # Labeling each point with the corresponding number
         for i, txt in enumerate(params):
             plt.annotate(txt, (numbers[i], accuracies[i]))
+
+        print(params)
         
-        plt.scatter(numbers, accuracies, alpha=0.5, s=params_s, label='Parameters')
+        plt.scatter(numbers, accuracies, alpha=0.5, s=params, label='Parameters')
 
     plt.axhline(highest_accuracy, color='orange', linestyle='--')
         

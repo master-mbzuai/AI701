@@ -50,7 +50,7 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 10
 
-        self.modifier_weights = torch.randn(self.input, self.output, requires_grad=True, device=device)
+        self.modifier_weights = torch.randn(self.output, self.input, requires_grad=True, device=device)
         #self.modifier_bias = torch.randn(self.input, self.input, requires_grad=True, device=device)
         #self.modifier_bias.requires_grad = True
 
@@ -100,11 +100,11 @@ class ImageClassification(MicroMind):
         x = self.modules["classifier"](feature_vector)
         indices_1 = torch.argmax(x, dim=1)
 
-        indices_np = indices_1.to('cpu').numpy()
-        test = batch[1].to('cpu').numpy()
+        # indices_np = indices_1.to('cpu').numpy()
+        # test = batch[1].to('cpu').numpy()
         # print("trut", test)
         # print("predicted", indices_1)
-        test2 = np.array([clustering_mapping[y] for y in test])
+        # test2 = np.array([clustering_mapping[y] for y in test])
         # print("trut_cluster", test)
         # print("predicted", indices_np)
         # print(test2 == indices_np )
@@ -113,13 +113,13 @@ class ImageClassification(MicroMind):
         # print(indices_np)
         # print(test2 == indices_np)
         # print((test2 == indices_np).sum(0))
-        print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
+        # print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
 
         #feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
 
-        weights = torch.index_select(self.modifier_weights, 1, indices_1)  
+        weights = torch.index_select(self.modifier_weights, 0, indices_1)  
 
-        shifted = torch.matmul(weights, feature_vector)
+        shifted = torch.mul(weights, feature_vector)
 
         #weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
         #print(weights)
@@ -129,9 +129,9 @@ class ImageClassification(MicroMind):
 
         #shifted = torch.bmm(feature_vector, weights).view(len(batch[0]), 10)
 
-        #last = self.modules["classifier"](shifted)
+        last = self.modules["classifier"](shifted)
 
-        softmax2 = DiffSoftmax(shifted, tau=1.0, hard=False, dim=1)
+        softmax2 = DiffSoftmax(last, tau=1.0, hard=False, dim=1)
 
         # Find the index of the 1
         #indices_of_ones1 = (softmax * self.indices).sum(dim=1)

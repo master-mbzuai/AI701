@@ -10,9 +10,9 @@ import platform
 print(platform.system())
 
 if platform.system() == "Darwin":
-    model_path = "./code/pretrained/hierarchy10_new/epoch_48_val_loss_0.8555.ckpt"
+    model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 else:
-    model_path = "./pretrained/hierarchy10_new/epoch_48_val_loss_0.8555.ckpt"
+    model_path = "./pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -113,7 +113,7 @@ class ImageClassification(MicroMind):
         # print(indices_np)
         # print(test2 == indices_np)
         # print((test2 == indices_np).sum(0))
-        #print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
+        # print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
 
         feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
 
@@ -164,7 +164,7 @@ class ImageClassification(MicroMind):
         return output_tensor
 
 
-    def compute_loss(self, pred, batch):        
+    def compute_loss(self, pred, batch):               
         return nn.CrossEntropyLoss()(pred, batch[1])
     
     def configure_optimizers(self):

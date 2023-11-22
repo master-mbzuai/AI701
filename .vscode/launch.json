@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--model_name", "hierarchy10test", "--experiment_name", "hierarchy_100_fulltestasdasd", "--lr", "0.0001"]
+            "args": ["--model_name", "hierarchy100original", "--experiment_name", "hierarchy_100_original", "--lr", "0.0001"]
         }
     ]
 }
