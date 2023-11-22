@@ -111,12 +111,12 @@ if __name__ == "__main__":
          transforms.Resize((160, 160), antialias=True),          
         ] 
     )
-    trainset = torchvision.datasets.CIFAR100(
-        root="data/cifar-100", train=True, download=True, transform=train_transform
+    trainset = dataset.CIFAR100CUSTOM(
+        root="data/cifar-100", train=True, download=True, transform=train_transform, coarse=False
     )
-    testset = torchvision.datasets.CIFAR100(
-        root="data/cifar-100", train=False, download=True, transform=transform
-    )               
+    testset = dataset.CIFAR100CUSTOM(
+        root="data/cifar-100", train=False, download=True, transform=transform, coarse=False
+    )
 
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 

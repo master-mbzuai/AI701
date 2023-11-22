@@ -106,7 +106,9 @@ for x in complete_mapping.keys():
     inverse_complete[complete_mapping[x]] = x
 
 
-
+# #tensor([1.7125e-21, 3.7843e-17, 1.2686e-09, 1.4034e-20, 2.0720e-16, 9.7677e-01,
+#         7.3190e-14, 2.3217e-02, 1.0944e-05, 2.4137e-10], device='mps:0',
+#        grad_fn=<SelectBackward0>)
 
 # for x in range(10):
 #     classes_in_parent[x] = []
@@ -172,16 +174,20 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             with open(file_path, "rb") as f:
                 entry = pickle.load(f, encoding="latin1")
                 self.data.append(entry["data"])
-                print(entry["fine_labels"][:100])
-                print(entry["coarse_labels"][:100])                
+                print(entry["fine_labels"][:100])                                
+                
+                entry["fine_labels"] = [complete_mapping[x] for x in entry["fine_labels"]]           
+
+                print(entry["fine_labels"][:100])                           
 
                 if(self.coarse):
                     #self.targets.extend([clustering_mapping[complete_mapping[x]] for x in entry["fine_labels"]])
-                    self.targets.extend([complete_mapping[clustering_mapping[x]] for x in entry["fine_labels"]])
+                    #self.targets.extend([clustering_mapping[complete_mapping[x]] for x in entry["fine_labels"]])
+                    self.targets.extend([clustering_mapping[x] for x in entry["fine_labels"]])
                     #self.targets.extend(entry["coarse_labels"])
                 else:
                     #self.targets.extend(entry["fine_labels"])
-                    self.targets.extend([complete_mapping[x] for x in entry["fine_labels"]])
+                    self.targets.extend(entry["fine_labels"])
 
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
@@ -196,7 +202,7 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
         Returns:
             tuple: (image, target) where target is index of the target class.
         """
-        img, target = self.data[index], inverse_complete[self.targets[index]]
+        img, target = self.data[index], self.targets[index]
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image

@@ -3,12 +3,10 @@ from micromind.utils.parse import parse_arguments
 
 import torch
 import torch.nn as nn
+import torchvision
 import torchvision.transforms as transforms
 from torchinfo import summary
 from ptflops import get_model_complexity_info
-
-from torchvision.transforms import v2
-from torch.utils.data import default_collate
 
 import dataset.dataset as dataset
 
@@ -16,6 +14,9 @@ import os
 import random
 import importlib
 import numpy as np
+
+from torchvision.transforms import v2
+from torch.utils.data import default_collate
 
 batch_size = 64
 
@@ -63,12 +64,12 @@ def save_parameters(model, hparams):
 
 if __name__ == "__main__":  
 
-    START_seed()  
-    
+    START_seed()          
+
     hparams = parse_arguments()    
+    print(hparams)
     d = hparams.d
-    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'   
-    print(hparams.experiment_name)
+    hparams.experiment_name = hparams.experiment_name + '/' + str(hparams.d) + '/'       
 
     print("Running experiment with {}".format(hparams.d))
 
@@ -84,8 +85,8 @@ if __name__ == "__main__":
             tmp = (pred.argmax(1) == batch[1].argmax(1)).float()
         return tmp
     
-    cutmix = v2.CutMix(num_classes=10, alpha=0.5)
-    mixup = v2.MixUp(num_classes=10, alpha=0.5)
+    cutmix = v2.CutMix(num_classes=100, alpha=0.7)
+    mixup = v2.MixUp(num_classes=100, alpha=0.7)
     cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
 
     def collate_fn(batch):
@@ -96,36 +97,41 @@ if __name__ == "__main__":
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
+         #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
          transforms.Resize((160, 160), antialias=True), 
          transforms.RandomHorizontalFlip(0.5),
-         transforms.RandomRotation(10)
+         transforms.RandomRotation(10),         
         ] 
     )
     transform = transforms.Compose(
         [
          transforms.ToTensor(), 
          transforms.Normalize((0.5070751592371323, 0.48654887331495095, 0.4409178433670343), (0.26733428587941854, 0.25643846292120615, 0.2761504713263903)), 
+         #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
          transforms.Resize((160, 160), antialias=True),          
         ] 
     )
-    trainset = dataset.CIFAR100CUSTOM(
-        root="data/cifar-100", train=True, download=True, transform=train_transform, coarse=True
+    trainset = torchvision.datasets.CIFAR100(
+        root="data/cifar-100", train=True, download=True, transform=train_transform
     )
-    testset = dataset.CIFAR100CUSTOM(
-        root="data/cifar-100", train=False, download=True, transform=transform, coarse=True
-    )
+    testset = torchvision.datasets.CIFAR100(
+        root="data/cifar-100", train=False, download=True, transform=transform
+    )               
 
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=1,
-        #collate_fn=collate_fn
+        num_workers=2,    
+        collate_fn=collate_fn  
     )
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=1,
+        num_workers=2,
     )
+
+    # if("hierarchy" not in hparams.model_name or "pca" not in hparams.model_name):
+    #     save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 
@@ -137,3 +143,12 @@ if __name__ == "__main__":
         metrics=[acc],
         debug=hparams.debug,
     )
+
+    # result = m.test(
+    #     datasets={"test": test_loader},
+    # )    
+
+    # result += " Epochs: " + str(epochs)
+
+    # with open(hparams.output_folder + "/" + hparams.experiment_name+ '/test_set_result.txt', 'w') as file:
+    #     file.write(result)
