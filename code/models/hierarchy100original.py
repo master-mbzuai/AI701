@@ -166,8 +166,7 @@ class ImageClassification(MicroMind):
         return output_tensor
 
 
-    def compute_loss(self, pred, batch):        
-        print(batch[1])
+    def compute_loss(self, pred, batch):                
         return nn.CrossEntropyLoss()(pred, batch[1])
     
     def configure_optimizers(self):
