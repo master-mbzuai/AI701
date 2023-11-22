@@ -119,7 +119,7 @@ class ImageClassification(MicroMind):
 
         weights = torch.index_select(self.modifier_weights, 1, indices_1)  
 
-        shifted = weights * feature_vector    
+        shifted = torch.matmul(weights, feature_vector)
 
         #weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
         #print(weights)
