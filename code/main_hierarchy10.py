@@ -126,7 +126,7 @@ if __name__ == "__main__":
         trainset, batch_size=batch_size, 
         shuffle=True, 
         num_workers=NUM_WORKERS,
-        #collate_fn=collate_fn
+        collate_fn=collate_fn
     )
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
