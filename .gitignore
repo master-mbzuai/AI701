@@ -24,3 +24,4 @@ code/wandb/*
 !code/results/hierarchy_10_10/0/save/epoch_27_val_loss_0.7234.ckpt
 !code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt
 !code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt
+!code/pretrained/hierarchy10_new/epoch_48_val_loss_0.8555.ckpt
