@@ -17,6 +17,13 @@ import random
 import importlib
 import numpy as np
 
+import platform
+
+if platform.system() == "Darwin":
+    NUM_WORKERS = 1
+else:
+    NUM_WORKERS = 8
+
 batch_size = 64
 
 def START_seed():
@@ -118,13 +125,13 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=1,
+        num_workers=NUM_WORKERS,
         #collate_fn=collate_fn
     )
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=1,
+        num_workers=NUM_WORKERS,
     )
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    

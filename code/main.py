@@ -85,8 +85,8 @@ if __name__ == "__main__":
             tmp = (pred.argmax(1) == batch[1].argmax(1)).float()
         return tmp
     
-    cutmix = v2.CutMix(num_classes=100, alpha=0.7)
-    mixup = v2.MixUp(num_classes=100, alpha=0.7)
+    cutmix = v2.CutMix(num_classes=100, alpha=0.5)
+    mixup = v2.MixUp(num_classes=100, alpha=0.5)
     cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
 
     def collate_fn(batch):
