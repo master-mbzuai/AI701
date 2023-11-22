@@ -174,11 +174,11 @@ class CIFAR100CUSTOM(torchvision.datasets.CIFAR100):
             with open(file_path, "rb") as f:
                 entry = pickle.load(f, encoding="latin1")
                 self.data.append(entry["data"])
-                print(entry["fine_labels"][:100])                                
+                print("PRE:", entry["fine_labels"][:100])                                
                 
-                entry["fine_labels"] = [complete_mapping[x] for x in entry["fine_labels"]]           
+                #entry["fine_labels"] = [complete_mapping[x] for x in entry["fine_labels"]]           
 
-                print(entry["fine_labels"][:100])                           
+                print("AFTER:", entry["fine_labels"][:100])                           
 
                 if(self.coarse):
                     #self.targets.extend([clustering_mapping[complete_mapping[x]] for x in entry["fine_labels"]])
