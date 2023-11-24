@@ -6,13 +6,17 @@ import torch.nn as nn
 import numpy as np
 
 import platform
+import pickle
 
 print(platform.system())
 
 if platform.system() == "Darwin":
-    model_path = "./code/pretrained/hierarchy10_new/epoch_52_val_loss_0.6459.ckpt"
+    model_path = "./code/pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
 else:
-    model_path = "./pretrained/hierarchy10_new/epoch_52_val_loss_0.6459.ckpt"
+    model_path = "./pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+
+embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
+
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -47,10 +51,10 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = 344
+        self.input = 200
         self.output = 10
 
-        self.modifier_weights = torch.randn(self.output, self.input, requires_grad=True, device=device)
+        self.modifier_weights = torch.randn(self.input * self.output, self.output, requires_grad=True, device=device)
         #self.modifier_bias = torch.randn(self.input, self.input, requires_grad=True, device=device)
         #self.modifier_bias.requires_grad = True
 
@@ -59,6 +63,18 @@ class ImageClassification(MicroMind):
         # num_classes: 1000
         # num_layers: 7
         # t_zero: 4.0
+
+        # import the embeddings
+        with open(embedding_path, 'rb') as file:
+            data = pickle.load(file)
+
+        x = data["outputs"]
+
+        # self.pca = PCA(n_components=self.input)
+        # self.pca.fit_transform(x)
+
+        U, S, V = torch.pca_lowrank(x, q=self.input)
+        self.V = V.to('cuda:0')
 
         self.modules["feature_extractor"] = PhiNet(
             input_shape=(3, 240, 240),
@@ -97,14 +113,16 @@ class ImageClassification(MicroMind):
 
         feature_vector = self.modules["feature_extractor"](batch[0])
         feature_vector = self.modules["flattener"](feature_vector)
+        feature_vector = torch.matmul(feature_vector, self.V) # we need to add this as a computation complexity 
         x = self.modules["classifier"](feature_vector)
+
         indices_1 = torch.argmax(x, dim=1)
 
-        # indices_np = indices_1.to('cpu').numpy()
-        # test = batch[1].to('cpu').numpy()
+        indices_np = indices_1.to('cpu').numpy()
+        test = batch[1].to('cpu').numpy()
         # print("trut", test)
         # print("predicted", indices_1)
-        # test2 = np.array([clustering_mapping[y] for y in test])
+        test2 = np.array([clustering_mapping[y] for y in test])
         # print("trut_cluster", test)
         # print("predicted", indices_np)
         # print(test2 == indices_np )
@@ -115,23 +133,21 @@ class ImageClassification(MicroMind):
         # print((test2 == indices_np).sum(0))
         # print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
 
-        #feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
+        feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
 
-        weights = torch.index_select(self.modifier_weights, 0, indices_1)  
+        weights = torch.index_select(self.modifier_weights, 1, indices_1)      
 
-        shifted = torch.mul(weights, feature_vector)
-
-        #weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
+        weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
         #print(weights)
 
         #bias = torch.index_select(self.modifier_bias, 0, indices_1)
         #shifted = torch.matmul(feature_vector, weights)
 
-        #shifted = torch.bmm(feature_vector, weights).view(len(batch[0]), 10)
+        shifted = torch.bmm(feature_vector, weights).view(len(batch[0]), 10)
 
-        last = self.modules["classifier"](shifted)
+        #last = self.modules["classifier"](shifted)
 
-        softmax2 = DiffSoftmax(last, tau=1.0, hard=False, dim=1)
+        softmax2 = DiffSoftmax(shifted, tau=1.0, hard=False, dim=1)
 
         # Find the index of the 1
         #indices_of_ones1 = (softmax * self.indices).sum(dim=1)
@@ -166,7 +182,7 @@ class ImageClassification(MicroMind):
         return output_tensor
 
 
-    def compute_loss(self, pred, batch):                
+    def compute_loss(self, pred, batch):               
         return nn.CrossEntropyLoss()(pred, batch[1])
     
     def configure_optimizers(self):

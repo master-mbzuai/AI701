@@ -8,11 +8,9 @@ import numpy as np
 import platform
 
 if platform.system() == "Darwin":
-    model_path = "./code/pretrained/finetuned_newmapping/epoch_49_val_loss_1.1554.ckpt"
+    model_path = "./code/pretrained/finetuned/epoch_165_val_loss_0.9951.ckpt"
 else:
-    model_path = "./pretrained/finetuned_newmapping/epoch_49_val_loss_1.1554.ckpt"
-
-
+    model_path = "./pretrained/finetuned/epoch_165_val_loss_0.9951.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")

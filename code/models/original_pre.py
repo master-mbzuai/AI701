@@ -4,7 +4,7 @@ from micromind.networks import PhiNet
 import torch
 import torch.nn as nn
 
-model_path = "./pretrained/finetuned/baseline.ckpt"
+model_path = "./pretrained/finetuned/epoch_165_val_loss_0.9951.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
