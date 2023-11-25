@@ -47,9 +47,10 @@ def save_parameters(model, hparams):
     #print(summary_backbone)
 
     input = (model.input, 1, 1)
+    print(model.input)
     macs_classifier, params_classifier = get_model_complexity_info(model.modules["classifier"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)        
-    summary_classifier = summary(model.modules["classifier"], input_size=(10, model.input, 1, 1))    
+    summary_classifier = summary(model.modules["classifier"], input_size=(1, model.input, 1, 1))    
 
     output = "BACKBONE\n" 
     output += "MACs {}, learnable parameters {}\n".format(macs_backbone, params_backbone)
@@ -133,6 +134,8 @@ if __name__ == "__main__":
         shuffle=False, 
         num_workers=NUM_WORKERS,
     )
+
+    save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 

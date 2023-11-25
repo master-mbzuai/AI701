@@ -10,12 +10,20 @@ import pickle
 
 print(platform.system())
 
+# if platform.system() == "Darwin":
+#     model_path = "./code/pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+# else:
+#     model_path = "./pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+
+# embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
+
 if platform.system() == "Darwin":
-    model_path = "./code/pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+    model_path = "./code/pretrained/hierarchyPCA/epoch_41_val_loss_0.6479.ckpt"
 else:
-    model_path = "./pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+    model_path = "./pretrained/hierarchyPCA/epoch_41_val_loss_0.6479.ckpt"
 
 embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
+
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
     print("Running on the GPU")
@@ -49,7 +57,7 @@ class ImageClassification(MicroMind):
     def __init__(self, *args, inner_layer_width = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.input = 200
+        self.input = 300
         self.output = 10
 
         self.modifier_weights = torch.randn(self.output, self.input, requires_grad=True, device=device)

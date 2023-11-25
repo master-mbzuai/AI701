@@ -59,11 +59,13 @@ def read_results(file_path):
 
 if __name__ == "__main__":
 
+    print("ciao")
+
     results = {}
     #paths = ["../results/adaptive_base/", "../results/adaptive_relu/"]
     #paths = ["../results/adaptive_base/", "../results/adaptive_relu/", "../results/nnmf_base/"]
     #paths = ["../results/lasso/"]
-    paths = ["../results/pca_hierarchical/"]
+    paths = ["../results/adaptive_01_better/"]
 
     for path in paths:
         results[path] = {}    
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     #plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
     plt.savefig("../results/_images/" + "-".join(legends) + ".jpg")
-    #plt.show()    
+    plt.show()    
 
     # # Extract numbers, accuracies, and parameters from the data
     # numbers = [int(key) for key in data.keys()]

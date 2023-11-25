@@ -130,8 +130,8 @@ if __name__ == "__main__":
         num_workers=2,
     )
 
-    # if("hierarchy" not in hparams.model_name or "pca" not in hparams.model_name):
-    #     save_parameters(m, hparams)
+    if("hierarchy" not in hparams.model_name or "pca" not in hparams.model_name):
+        save_parameters(m, hparams)
 
     acc = Metric(name="accuracy", fn=compute_accuracy)    
 

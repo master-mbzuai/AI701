@@ -11,9 +11,9 @@ import pickle
 print(platform.system())
 
 if platform.system() == "Darwin":
-    model_path = "./code/pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+    model_path = "./code/pretrained/hierarchyPCA/epoch_41_val_loss_0.6479.ckpt"
 else:
-    model_path = "./pretrained/finetuned_newmapping/10pca/epoch_49_val_loss_0.6728.ckpt"
+    model_path = "./pretrained/hierarchyPCA/epoch_41_val_loss_0.6479.ckpt"
 
 embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
 
@@ -133,11 +133,11 @@ class ImageClassification(MicroMind):
         # print((test2 == indices_np).sum(0))
         # print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))        
 
-        feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
+        feature_vector = feature_vector.reshape(len(batch[0]), 1, 200)
 
         weights = torch.index_select(self.modifier_weights, 1, indices_1)      
 
-        weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
+        weights = weights.view(200, 10, len(batch[0])).permute(2, 0, 1)
         #print(weights)
 
         #bias = torch.index_select(self.modifier_bias, 0, indices_1)

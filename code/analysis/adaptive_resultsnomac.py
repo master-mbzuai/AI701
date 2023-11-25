@@ -125,16 +125,16 @@ if __name__ == "__main__":
         
         plt.scatter(numbers, accuracies, alpha=0.5, label='Parameters')
 
-    plt.axhline(highest_accuracy, color='orange', linestyle='--')
+    #plt.axhline(highest_accuracy, color='orange', linestyle='--')
         
     legends = [key.split("/")[-2] for key in data.keys()]
 
     plt.legend(legends)    
 
-    plt.text(40, accuracies[0]+0.02, "Baseline", color='orange')
-    plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
-    plt.title('Accuracy vs Compression - d - 100 epochs')
-    plt.xlabel('Number')
+    #plt.text(40, accuracies[0]+0.02, "Baseline", color='orange')
+    #plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
+    plt.title('Principal components selected on 10 parent classes - 100 epochs')
+    plt.xlabel('PC')
     plt.ylabel('Accuracy')
     #plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
