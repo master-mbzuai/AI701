@@ -1,9 +1,9 @@
 # AI701 project fall 2023
 
 ## Team members
-- [ ] 1. [Name]()
-- [ ] 2. [Name]()
-- [ ] 3. [Name]()
+- [ ] 1. [Farhkhad]()
+- [ ] 2. [Arsen]()
+- [ ] 3. [Sebastian Cavada]()
 
 ## Project description
 

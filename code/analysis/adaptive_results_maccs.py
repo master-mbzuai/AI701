@@ -82,7 +82,6 @@ if __name__ == "__main__":
                     print(meta)          
                     results[path][folder]["mac_classifier"] = meta["CLASSIFIER_MACs"]   
                     quantity = meta["CLASSIFIER_MACs"]
-
                     quantity2 = meta["BACKBONE_MACs"]                
 
                     results[path][folder]["mac_all"] = str(float(quantity) + float(quantity2))
@@ -92,9 +91,7 @@ if __name__ == "__main__":
                     results[path][folder]["accuracy"] = accuracy
                     results[path][folder]["loss"] = loss
 
-        data = {k: v for k, v in sorted(results.items(), key=lambda item: item[0], reverse=False)}    
-
-
+        data = {k: v for k, v in sorted(results.items(), key=lambda item: item[0], reverse=False)}
 
     highest_accuracy = 0
 
@@ -123,27 +120,33 @@ if __name__ == "__main__":
             highest_accuracy = accuracies[0]
 
         # Labeling each point with the corresponding number
-        for i, txt in enumerate(params):
-            plt.annotate(txt, (numbers[i], accuracies[i]))
+        # for i, txt in enumerate(params):
+        #     plt.annotate(txt, (numbers[i], accuracies[i]))
 
         print(params)
         
-        plt.scatter(numbers, accuracies, alpha=0.5, s=params_s, label='Parameters')
+        plt.plot(params[1:], accuracies[1:], alpha=0.5, label=key.split("/")[-2])
+        plt.scatter(params[1:], accuracies[1:], alpha=0.5)
+
+    hierarchy_accuracy = 0.6046
+    hierarchy_maccs = 7932
+
+    plt.scatter(hierarchy_maccs, hierarchy_accuracy, marker='*', s=130, c='purple', label='Our model')
 
     plt.axhline(highest_accuracy, color='orange', linestyle='--')
         
     legends = [key.split("/")[-2] for key in data.keys()]
 
-    plt.legend(legends)    
+    plt.legend()
 
     plt.text(40, accuracies[0]+0.02, "Baseline", color='orange')
     plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
-    plt.title('Accuracy vs Compression - d - 100 epochs')
-    plt.xlabel('Number')
+    plt.title('Number of MACCs vs accuracy of the models.')
+    plt.xlabel('MACCs')
     plt.ylabel('Accuracy')
     #plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)
-    plt.savefig("../results/_images/" + "-".join(legends) + ".jpg")
+    plt.savefig("../results/_images/" + "-".join(legends) + "-maccs.jpg")
     plt.show()    
 
     # # Extract numbers, accuracies, and parameters from the data
