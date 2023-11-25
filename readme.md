@@ -21,6 +21,7 @@
 - results -> all the results of the experiments, with the different folders for each experiment
 - analysis ->  some helper scripts used to analyze the results
 - components -> custom components developed for the project
+- data analysis -> some notebook exploring the embeddings and clustering of embeddings
 - ResNet -> all of the scripts for training and testing ResNet. The only things not provided are the weights (because they exceed the GitHub's limit of 100Mb) and CIFAR100. The script for downloading the dataset is provided. However, to get the weights, you need to download from OneDrive: The link to get weights for ResNet scripts: https://mbzuaiac-my.sharepoint.com/:f:/g/personal/arsen_abzhanov_mbzuai_ac_ae/EvLMASVf-IxPj6QX2tJ_UGABtlqkxmKeVvoPoPdwFsbtTQ?e=8YrVoF
 
 ### Installation 
@@ -40,7 +41,7 @@ Cd into the code directory ```cd code```
 
 There is a specific order to reproduce our results.
 
-0. Step 0 is to get the pretrained weights on imagenet either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet)
+0. Step 0 is to get the pretrained weights on imagenet either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet) or they can be found at the following link: (https://mbzuaiac-my.sharepoint.com/:u:/g/personal/sebastian_cavada_mbzuai_ac_ae/EaKOy-9mjEhAsgqtlpjG8o4BgmHaSFjgWZgvXS4JuensjQ?e=4RF7xn)
 
 1. Once the pretrained weights are downloaded or the access was granted, the first step is to run the python script:
 
