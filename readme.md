@@ -24,6 +24,8 @@
 
 ### Installation 
 
+0. Create an environment as follows ```conda create -n aiproject python==3.8.13```
+0. Install torch the following way: ```pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118```
 1. Git clone the repo ```https://github.com/master-mbzuai/micromind.git``` and install it with ```pip -e install .``` while being inside the folder.
 2. Run ```pip install -r requirements.txt```
 
