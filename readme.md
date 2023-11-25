@@ -32,6 +32,8 @@
 
 ## How to run
 
+**NOTE** Make sure to be in the ```improvement_seb``` branch
+
 Cd into the code directory ```cd code```
 
 **NOTE:** In order to see the final results, only step 3 is necessary. If you want to train everything from scratch (time consuming) start from step 0
