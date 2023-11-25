@@ -32,13 +32,13 @@
 
 ## How to run
 
-Refer to the installation phase
+Cd into the code directory ```cd code```
+
+**NOTE:** In order to see the final results, only step 3 is necessary. If you want to train everything from scratch (time consuming) start from step 0
 
 There is a specific order to reproduce our results.
 
-0. Step 0 is to get the pretrained weights either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet)
-
-0. Cd into the code directory ```cd code```
+0. Step 0 is to get the pretrained weights on imagenet either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet)
 
 1. Once the pretrained weights are downloaded or the access was granted, the first step is to run the python script:
 
@@ -62,7 +62,7 @@ This script will take the weights of the backbone and the weights of the classif
 
 This will use the previous trained weights and fine-tune the classifier on the whole CIFAR100 dataset, with the hierarchical approach described in the report.
 
-**NOTE:** At any point you can just run the command at each step since the pretrained weights will be already loaded. In order to show the overall working it is advised to run the command on step 3. 
+
 
 ## How to run ResNet
 If you want to reproduce the results of experiments with ResNet from scratch, you can do this :
