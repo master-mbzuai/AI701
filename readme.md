@@ -50,6 +50,9 @@ This script will take the weights of the backbone and the weights of the classif
 
 This will use the previous trained weights and fine-tune the classifier on the whole CIFAR100 dataset, with the hierarchical approach described in the report.
 
+The link to get weights for ResNet:
+https://mbzuaiac-my.sharepoint.com/:f:/g/personal/arsen_abzhanov_mbzuai_ac_ae/EvLMASVf-IxPj6QX2tJ_UGABtlqkxmKeVvoPoPdwFsbtTQ?e=8YrVoF
+
 ## Results
 
 Results are shown in the handed-in report.
