@@ -63,9 +63,10 @@ if __name__ == "__main__":
 
     results = {}
     #paths = ["../results/adaptive_base/", "../results/adaptive_relu/"]
-    paths = ["../results/adaptive_01_better/", "../results/adaptive_relu/", "../results/nnmf_base/"]
+    #paths = ["../results/adaptive_01_better/", "../results/adaptive_relu/", "../results/nnmf_base/"]
     #paths = ["../results/lasso/"]
-    #paths = ["../results/adaptive_01_better/"]    
+    #paths = ["../results/adaptive_01_better/"]
+    paths = ["../results/pca_hierarchical/"]
 
     for path in paths:
         results[path] = {}    
@@ -105,8 +106,9 @@ if __name__ == "__main__":
         accuracies = [float(data[key][key2]['accuracy']) for key2 in data[key].keys()]
         #print(accuracies)
 
+
         params = [float(data[key][key2]['mac_classifier'].split()[0]) for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
-        params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+        params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.1 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
 
         # # Sort by numbers for better plotting
         sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
@@ -114,7 +116,7 @@ if __name__ == "__main__":
         accuracies = [accuracies[i] for i in sorted_indices]
         params = [params[i] for i in sorted_indices]
         params_s = [params_s[i] for i in sorted_indices]
-
+        print(params)
 
         # params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
         # params = [float(data[key][key2]['mac_classifier'].split()[0])*0.001 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
@@ -130,16 +132,16 @@ if __name__ == "__main__":
         
         plt.scatter(numbers, accuracies, alpha=0.5, s=params_s, label='Parameters')
 
-    plt.axhline(highest_accuracy, color='orange', linestyle='--')
+    #plt.axhline(highest_accuracy, color='orange', linestyle='--')
         
     legends = [key.split("/")[-2] for key in data.keys()]
 
     plt.legend(legends)    
 
-    plt.text(40, accuracies[0]+0.02, "Baseline", color='orange')
-    plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
-    plt.title('Accuracy vs Compression - d - 100 epochs')
-    plt.xlabel('Number')
+    #plt.text(40, accuracies[0]+0.02, "Baseline", color='orange')
+    #plt.text(2.5, 4.1, 'Horizontal line at y=4', color='blue')
+    plt.title('Principal Components vs Accuracy on 10 parent classes - 100 epochs')
+    plt.xlabel('Principal Components')
     plt.ylabel('Accuracy')
     #plt.colorbar(label='Parameters (KMac)')
     plt.grid(True)

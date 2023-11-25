@@ -46,19 +46,38 @@ def save_parameters(model, hparams):
     summary_backbone = summary(model.modules["feature_extractor"], input_size=(batch_size, 3, 32, 32))    
     #print(summary_backbone)
 
-    input = (model.input, 1, 1)
+    input = (1, model.input, 1, 1)
     print(model.input)
+
+    macs_flattener, params_flattener = get_model_complexity_info(model.modules["flattener"], input, as_strings=False,
+                                           print_per_layer_stat=False, verbose=False)
+    
+    input = (1, model.input)
+    print(model.input)
+    
     macs_classifier, params_classifier = get_model_complexity_info(model.modules["classifier"], input, as_strings=False,
                                            print_per_layer_stat=False, verbose=False)
-    summary_classifier = summary(model.modules["classifier"], input_size=(1, model.input, 1, 1))    
+    
+    input = (1, model.input, 1, 1)
+    print(model.input)
+
+    macs_all, params_all = get_model_complexity_info(nn.Sequential(model.modules["flattener"],model.modules["classifier"]), input, as_strings=False,
+                                        print_per_layer_stat=False, verbose=False)
+        
+    
+    summary_classifier = summary(nn.Sequential(model.modules["flattener"],model.modules["classifier"]), input_size=(10, model.input, 1, 1))    
 
     output = "BACKBONE\n" 
     output += "MACs {}, learnable parameters {}\n".format(macs_backbone, params_backbone)
     output += str(summary_backbone) + "\n"
     output += "\n"*2
+    # output += "FLATTENER\n" 
+    # output += "MACs {}, learnable parameters {}\n".format(macs_flattener, params_flattener)
     output += "CLASSIFIER\n" 
-    output += "MACs {}, learnable parameters {}\n".format(macs_classifier, params_classifier)
+    output += "MACs {}, learnable parameters {}\n".format(macs_all, params_all)
     output += str(summary_classifier)        
+
+    print(path)
 
     if not os.path.exists(path):
         os.makedirs(path)

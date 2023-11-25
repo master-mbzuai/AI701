@@ -1,3 +1,6 @@
+
+.vscode/*
+
 data/*
 output_onnx/
 
@@ -9,19 +12,26 @@ code/results_test_bad/*
 code/logs/*
 code/wandb/*
 
-*.ckpt
+code/exploration/*
 
-!code/results/adaptive_01
+*.ckpt
+*.pyc
+
+#!code/results/adaptive_01
+
+!code/results/adaptive_01_better
 !code/results/adaptive_relu
-!code/results/lasso
-!code/results/linear_prob_no
+# !code/results/lasso
+# !code/results/linear_prob_no
 !code/results/nnmf_base
 !code/results/nnmf_relu
 !code/results/nnmf_sig
 !code/results/pca
 !code/results/pca_best
-!code/results/hierarchy_10_10
-!code/results/hierarchy_10_10/0/save/epoch_27_val_loss_0.7234.ckpt
-!code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt
-!code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt
-!code/pretrained/hierarchy10_new/epoch_48_val_loss_0.8555.ckpt
+#!code/results/hierarchy_10_10
+#!code/results/hierarchy_10_10/0/save/epoch_27_val_loss_0.7234.ckpt
+# !code/pretrained/hierarchy10/epoch_27_val_loss_0.7234.ckpt
+# !code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt
+# !code/pretrained/hierarchy10_new/epoch_48_val_loss_0.8555.ckpt
+
+

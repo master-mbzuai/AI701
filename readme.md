@@ -1,9 +1,9 @@
 # AI701 project fall 2023
 
 ## Team members
-- [ ] 1. [Name]()
-- [ ] 2. [Name]()
-- [ ] 3. [Name]()
+- [ ] 1. [Farhkhad]()
+- [ ] 2. [Arsen]()
+- [ ] 3. [Sebastian Cavada]()
 
 ## Project description
 
@@ -21,11 +21,15 @@
 - results -> all the results of the experiments, with the different folders for each experiment
 - analysis ->  some helper scripts used to analyze the results
 - components -> custom components developed for the project
-- ResNet -> all of the scripts for training and testing ResNet. The only things not provided are the weights (because they exceed the GitHub's limit of 100Mb) and CIFAR100. The script for downloading the dataset is provided. However, to get the weights, you need to download from OneDrive:
-The link to get weights for ResNet scripts:
-https://mbzuaiac-my.sharepoint.com/:f:/g/personal/arsen_abzhanov_mbzuai_ac_ae/EvLMASVf-IxPj6QX2tJ_UGABtlqkxmKeVvoPoPdwFsbtTQ?e=8YrVoF
 
-## How to run PhiNet
+### Installation 
+
+1. Git clone the repo ```https://github.com/master-mbzuai/micromind.git``` and install it with ```pip -e install .``` while being inside the folder.
+2. Run ```pip install -r requirements.txt```
+
+## How to run
+
+Refer to the installation phase
 
 There is a specific order to reproduce our results.
 
