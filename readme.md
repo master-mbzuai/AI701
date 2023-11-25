@@ -21,6 +21,7 @@
 - results -> all the results of the experiments, with the different folders for each experiment
 - analysis ->  some helper scripts used to analyze the results
 - components -> custom components developed for the project
+- ResNet -> all of the scripts for training and testing ResNet. The only things not provided are the weights (because they exceed the GitHub's limit of 100Mb) and CIFAR100. The script for downloading the dataset is provided. However, to get the weights, you need to download from OneDrive: The link to get weights for ResNet scripts: https://mbzuaiac-my.sharepoint.com/:f:/g/personal/arsen_abzhanov_mbzuai_ac_ae/EvLMASVf-IxPj6QX2tJ_UGABtlqkxmKeVvoPoPdwFsbtTQ?e=8YrVoF
 
 ### Installation 
 
@@ -58,6 +59,23 @@ This script will take the weights of the backbone and the weights of the classif
 ```python main_hierarchy100.py --model_name hierarchy100 --experiment_name hierarchy100 --epochs 50 --lr 0.0001```
 
 This will use the previous trained weights and fine-tune the classifier on the whole CIFAR100 dataset, with the hierarchical approach described in the report.
+
+## How to run ResNet
+If you want to reproduce the results of experiments with ResNet from scratch, you can do this :
+0. you don't need any weights, so no need to download them
+1. Run all of the cells in ResNet1028_to_100class.ipynb . This is the baseline model
+2. Run all of the cells in ResNet1028_to_d_to_100_plus_graph.ipynb . This is the script for introducing matrix factorization to the ResNet model.
+3. Run all of the cells in ResNet1028_to_parent_Loss_parent_only.ipynb . This is where the model is trained to do parent classification only. In the last few cells the weights are stored as 'group_1028_to_parent_Loss_parent_only_pretrained_model.h5'. They're going to be used later.
+4. Go to 20_Child_Classifiers/ResNet1028_to_parent_to_child_Loss_parent_only_LOOP copy.ipynb and  run all of the cells. The accuracy of child classification for each of the 20 parents are stored in a list. The arithmetic average of child classification accuracy is calculated in the last cell. The accuracy is suboptimal, so the weigths are not stored.
+5. Run all of the cells in ResNet1028_to_parent_Loss_parent_and_child.ipynb. This is where the model is trained to do both parent and child classification (Loss has two components). In the last few cells the weights are stored as 'group_1028_to_parent_Loss_parent_and_child_pretrained_model.h5'. They're going to be used later.
+6. Go to 20_Child_Classifiers/ResNet1028_to_parent_to_child_Loss_parent+child_LOOP.ipynb and run all of the cells. Twenty child classifiers are trained to do child classification and their weights are stored in the format 'group_1028_to_parent_Loss_parent_and_child_pretrained_model_For_parent_{i}.h5' where i is ranging from 0 to 19.
+7. The problem is that we save redundant information from those models in the previous step. We only need child classifiers' weights. To keep only those weights that we need, go to 20_Child_Classifiers_reduces_size/ResNet1028_to_parent_to_child_Loss_parent+child_LOOP.ipynb and run the cells. It will store weights in the forms of tensors, because in child classification, there is just one simple operation: matrix multiplication and bias being added. For each parent, there is a tensor 'group_1028_to_parent_Loss_parent_and_child_pretrained_model_For_parent_{}_weight_reduced_size.pt' and tensor 'group_1028_to_parent_Loss_parent_and_child_pretrained_model_For_parent_{}_bias_reduced_size.pt'.git
+8. Run all of the cells in Creating_json_parent_to_child.ipynb . This will create a json file, describing a mapping between fine label and child label. It's a nested dictionary:
+{key: (parent) & value: dictionary {key: (fine label) & value: (child label)}}
+9. Run all of the cells in 20_Child_Classifiers_reduces_size/ResNet_1028_to_parent_to_child_hierarchy.ipynb . This is the final result of branching CNN approach of ResNet on the test dataset (100 labels).
+
+If you want to reproduce the results of testing hierarchy with the weights provided from OneDrive, you can do this:
+0. Download 'group_1028_to_parent_Loss_parent_and_child_pretrained_model.h5' and run all of the cells in 20_Child_Classifiers_reduces_size/ResNet_1028_to_parent_to_child_hierarchy.ipynb.
 
 ## Results
 
