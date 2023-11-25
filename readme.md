@@ -22,7 +22,14 @@
 - analysis ->  some helper scripts used to analyze the results
 - components -> custom components developed for the project
 
+### Installation 
+
+1. Git clone the repo ```https://github.com/master-mbzuai/micromind.git``` and install it with ```pip -e install .``` while being inside the folder.
+2. Run ```pip install -r requirements.txt```
+
 ## How to run
+
+Refer to the installation phase
 
 There is a specific order to reproduce our results.
 
