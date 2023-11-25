@@ -59,7 +59,7 @@ This script will take the weights of the backbone and the weights of the classif
 This will use the previous trained weights and fine-tune the classifier on the whole CIFAR100 dataset, with the hierarchical approach described in the report.
 
 ## How to run ResNet
-If you want to reproduce the results of experiments with ResNet from scratch, you can do this:
+If you want to reproduce the results of experiments with ResNet from scratch, you can do this :
 0. you don't need any weights, so no need to download them
 1. Run all of the cells in ResNet1028_to_100class.ipynb . This is the baseline model
 2. Run all of the cells in ResNet1028_to_d_to_100_plus_graph.ipynb . This is the script for introducing matrix factorization to the ResNet model.
