@@ -21,6 +21,7 @@
 - results -> all the results of the experiments, with the different folders for each experiment
 - analysis ->  some helper scripts used to analyze the results
 - components -> custom components developed for the project
+- ResNet -> all of the scripts for training and testing ResNet. The only things not provided are the weights (because they exceed the GitHub's limit of 100Mb) and CIFAR100. The script for downloading the dataset is provided. However, to get the weights, you need to download from OneDrive: The link to get weights for ResNet scripts: https://mbzuaiac-my.sharepoint.com/:f:/g/personal/arsen_abzhanov_mbzuai_ac_ae/EvLMASVf-IxPj6QX2tJ_UGABtlqkxmKeVvoPoPdwFsbtTQ?e=8YrVoF
 
 ### Installation 
 
