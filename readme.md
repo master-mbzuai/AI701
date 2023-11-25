@@ -38,6 +38,8 @@ There is a specific order to reproduce our results.
 
 0. Step 0 is to get the pretrained weights either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet)
 
+0. Cd into the code directory ```cd code```
+
 1. Once the pretrained weights are downloaded or the access was granted, the first step is to run the python script:
 
 ```python main.py --model_name original --experiment_name finetuned --epochs 50 --lr 0.0001```
@@ -56,9 +58,11 @@ This script will take the weights of the backbone and the weights of the classif
 
 3. The third and last step is to run the python script:
 
-```python main_hierarchy100.py --model_name hierarchy100 --experiment_name hierarchy100 --epochs 50 --lr 0.0001```
+```python main_hierarchy.py --model_name hierarchy100original --experiment_name hierarchy100-testing --epochs 50 --lr 0.01```
 
 This will use the previous trained weights and fine-tune the classifier on the whole CIFAR100 dataset, with the hierarchical approach described in the report.
+
+**NOTE:** At any point you can just run the command at each step since the pretrained weights will be already loaded. In order to show the overall working it is advised to run the command on step 3. 
 
 ## How to run ResNet
 If you want to reproduce the results of experiments with ResNet from scratch, you can do this :
