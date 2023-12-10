@@ -10,9 +10,9 @@ import platform
 print(platform.system())
 
 if platform.system() == "Darwin":
-    model_path = "./code/pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+    model_path = "./code/pretrained/hierarchy10_new/epoch_52_val_loss_0.6459.ckpt"
 else:
-    model_path = "./pretrained/hierarchy10/epoch_48_val_loss_0.6899.ckpt"
+    model_path = "./pretrained/hierarchy10_new/epoch_52_val_loss_0.6459.ckpt"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
@@ -50,9 +50,12 @@ class ImageClassification(MicroMind):
         self.input = 344
         self.output = 10
 
-        self.modifier_weights = torch.randn(self.input * self.output, self.output, requires_grad=True, device=device)
+        self.modifier_weights = torch.randn(self.output, self.input, requires_grad=True, device=device)
         #self.modifier_bias = torch.randn(self.input, self.input, requires_grad=True, device=device)
         #self.modifier_bias.requires_grad = True
+
+        self.lasso = nn.Parameter(torch.rand(self.input), requires_grad=True).to(device)
+        self.lasso.requires_grad_ = True
 
         # alpha: 0.9
         # beta: 0.5
@@ -97,75 +100,39 @@ class ImageClassification(MicroMind):
 
         feature_vector = self.modules["feature_extractor"](batch[0])
         feature_vector = self.modules["flattener"](feature_vector)
+        feature_vector = torch.mul(feature_vector, self.lasso) # we need to add this as a computation complexity
+
         x = self.modules["classifier"](feature_vector)
-        indices_1 = torch.argmax(x, dim=1)
 
-        indices_np = indices_1.to('cpu').numpy()
-        test = batch[1].to('cpu').numpy()
-        # print("trut", test)
-        # print("predicted", indices_1)
-        test2 = np.array([clustering_mapping[y] for y in test])
-        # print("trut_cluster", test)
-        # print("predicted", indices_np)
-        # print(test2 == indices_np )
-        # print((test2 == indices_np).sum()/len(indices_1))        
-        # print(test2)
-        # print(indices_np)
-        # print(test2 == indices_np)
-        # print((test2 == indices_np).sum(0))
-        # print(torch.tensor(indices_1.tolist() == test2).sum()/len(indices_1))
 
-        feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
+        softmax1 = torch.argmax(x, dim=1)
 
-        weights = torch.index_select(self.modifier_weights, 1, indices_1)      
+        #feature_vector = feature_vector.reshape(len(batch[0]), 1, 344)
 
-        weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
+        weights = torch.index_select(self.modifier_weights, 0, softmax1)  
+
+        shifted = torch.mul(weights, feature_vector)
+
+        #weights = weights.view(344, 10, len(batch[0])).permute(2, 0, 1)
         #print(weights)
 
-        #bias = torch.index_select(self.modifier_bias, 0, indices_1)
-        #shifted = torch.matmul(feature_vector, weights)
-
-        shifted = torch.bmm(feature_vector, weights).view(len(batch[0]), 10)
-
-        #last = self.modules["classifier"](shifted)
-
-        softmax2 = DiffSoftmax(shifted, tau=1.0, hard=False, dim=1)
-
-        # Find the index of the 1
-        #indices_of_ones1 = (softmax * self.indices).sum(dim=1)
-
-        # indices_of_ones2 = torch.argmax(last, dim=1)
-        # print(indices_of_ones2)
-
-        #indexes_int = torch.argmax(softmax, dim=1)
-
-        #output_tensor = torch.cat([torch.zeros(10*indexes_int, batch[0].shape(0)), softmax2, torch.zeros(10*(10-indexes_int-1))], dim=0)
-        #output_tensor = torch.stack([torch.cat([torch.zeros(10*indexes_int[x]), softmax2, torch.zeros(10*(10-indexes_int[x]-1))], dim=0) for x in range(n)], dim=0)
-
-        # print(self.modifier_bias)
+        last = self.modules["classifier"](shifted)
+        softmax2 = DiffSoftmax(last, tau=1.0, hard=False, dim=1)
 
         # Calculate the ranges using vectorized operations
-        start = indices_1 * 10
-        end = (indices_1 + 1) * 10
-
-        # print(indices_1)
-        # print(test2)
+        softmax1 = torch.argmax(x, dim=1)
+        start = softmax1 * 10
+        end = (softmax1 + 1) * 10
 
         output_tensor = torch.zeros(len(batch[0]), 100, device=device)
-
-        # Use 'torch.arange' and 'torch.stack' for creating the sequence tensors
         to_add = torch.stack([torch.arange(start[i], end[i], device=device) for i in range(len(softmax2))])
-
-        output_tensor.scatter_(1, to_add, softmax2)   
-
-        # print(torch.argmax(output_tensor, dim=1))
-        # print(test)
-
-        return output_tensor
+        return output_tensor.scatter_(1, to_add, softmax2)   
 
 
-    def compute_loss(self, pred, batch):               
-        return nn.CrossEntropyLoss()(pred, batch[1])
+    def compute_loss(self, pred, batch):                
+        lasso_loss = self.lasso.abs().sum() * self.alpha
+        cross_loss = nn.CrossEntropyLoss()(pred, batch[1])
+        return lasso_loss + cross_loss
     
     def configure_optimizers(self):
         """Configures and defines the optimizer for the task. Defaults to adam
