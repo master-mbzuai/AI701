@@ -1,0 +1,1 @@
+Namespace(d=50, debug=False, epochs=1, experiment_name='adaptive_01_better/50/', lr=0.0001, model_name='adaptive', opt='adam', output_folder='results')

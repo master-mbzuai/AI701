@@ -8,12 +8,14 @@ import numpy as np
 import platform
 import pickle
 
+#if True:
 if platform.system() == "Darwin":
     model_path = "./code/pretrained/finetuned/epoch_165_val_loss_0.9951.ckpt"
+    embedding_path  = "./code/pretrained/embeddings/embeddings_all_l0.9.pkl"
 else:
     model_path = "./pretrained/finetuned/epoch_165_val_loss_0.9951.ckpt"
+    embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
 
-embedding_path  = "./pretrained/embeddings/embeddings_all_l0.9.pkl"
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")

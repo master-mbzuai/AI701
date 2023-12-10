@@ -63,9 +63,9 @@ if __name__ == "__main__":
 
     results = {}
     #paths = ["../results/adaptive_base/", "../results/adaptive_relu/"]
-    #paths = ["../results/adaptive_base/", "../results/adaptive_relu/", "../results/nnmf_base/"]
+    paths = ["../results/adaptive_01_better/", "../results/adaptive_relu/", "../results/nnmf_base/"]
     #paths = ["../results/lasso/"]
-    paths = ["../results/adaptive_01_better/"]
+    #paths = ["../results/adaptive_01_better/"]    
 
     for path in paths:
         results[path] = {}    
@@ -105,13 +105,16 @@ if __name__ == "__main__":
         accuracies = [float(data[key][key2]['accuracy']) for key2 in data[key].keys()]
         #print(accuracies)
 
-        params = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+        params = [float(data[key][key2]['mac_classifier'].split()[0]) for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
+        params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
 
         # # Sort by numbers for better plotting
         sorted_indices = sorted(range(len(numbers)), key=lambda k: numbers[k])
         numbers = [numbers[i] for i in sorted_indices]
         accuracies = [accuracies[i] for i in sorted_indices]
         params = [params[i] for i in sorted_indices]
+        params_s = [params_s[i] for i in sorted_indices]
+
 
         # params_s = [float(data[key][key2]['mac_classifier'].split()[0])*0.01 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
         # params = [float(data[key][key2]['mac_classifier'].split()[0])*0.001 for key2 in data[key].keys()]  # Assuming KMac, so multiplied by 1000
@@ -125,7 +128,7 @@ if __name__ == "__main__":
 
         print(params)
         
-        plt.scatter(numbers, accuracies, alpha=0.5, s=params, label='Parameters')
+        plt.scatter(numbers, accuracies, alpha=0.5, s=params_s, label='Parameters')
 
     plt.axhline(highest_accuracy, color='orange', linestyle='--')
         

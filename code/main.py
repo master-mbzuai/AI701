@@ -121,13 +121,13 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         trainset, batch_size=batch_size, 
         shuffle=True, 
-        num_workers=2,    
+        num_workers=6,    
         collate_fn=collate_fn  
     )
     test_loader = torch.utils.data.DataLoader(
         testset, batch_size=batch_size, 
         shuffle=False, 
-        num_workers=2,
+        num_workers=6,
     )
 
     if("hierarchy" not in hparams.model_name or "pca" not in hparams.model_name):

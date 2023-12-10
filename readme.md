@@ -1,9 +1,9 @@
 # AI701 project fall 2023
 
 ## Team members
-- [ ] 1. [Name]()
-- [ ] 2. [Name]()
-- [ ] 3. [Name]()
+- [ ] 1. [Farhkhad]()
+- [ ] 2. [Arsen]()
+- [ ] 3. [Sebastian Cavada]()
 
 ## Project description
 
@@ -21,12 +21,27 @@
 - results -> all the results of the experiments, with the different folders for each experiment
 - analysis ->  some helper scripts used to analyze the results
 - components -> custom components developed for the project
+- data analysis -> some notebook exploring the embeddings and clustering of embeddings
+- ResNet -> all of the scripts for training and testing ResNet. The only things not provided are the weights (because they exceed the GitHub's limit of 100Mb) and CIFAR100. The script for downloading the dataset is provided. However, to get the weights, you need to download from OneDrive: The link to get weights for ResNet scripts: https://mbzuaiac-my.sharepoint.com/:f:/g/personal/arsen_abzhanov_mbzuai_ac_ae/EvLMASVf-IxPj6QX2tJ_UGABtlqkxmKeVvoPoPdwFsbtTQ?e=8YrVoF
+
+### Installation 
+
+0. Create an environment as follows ```conda create -n aiproject python==3.8.13```
+0. Install torch the following way: ```pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118```
+1. Git clone the repo ```https://github.com/master-mbzuai/micromind.git``` and install it with ```pip -e install .``` while being inside the folder.
+2. Run ```pip install -r requirements.txt```
 
 ## How to run
 
+**NOTE** Make sure to be in the ```improvement_seb``` branch
+
+Cd into the code directory ```cd code```
+
+**NOTE:** In order to see the final results, only step 3 is necessary. If you want to train everything from scratch (time consuming) start from step 0
+
 There is a specific order to reproduce our results.
 
-0. Step 0 is to get the pretrained weights either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet)
+0. Step 0 is to get the pretrained weights on imagenet either for PhiNet or Resnet (get access at link: https://huggingface.co/micromind/ImageNet) or they can be found at the following link: (https://mbzuaiac-my.sharepoint.com/:u:/g/personal/sebastian_cavada_mbzuai_ac_ae/EaKOy-9mjEhAsgqtlpjG8o4BgmHaSFjgWZgvXS4JuensjQ?e=4RF7xn)
 
 1. Once the pretrained weights are downloaded or the access was granted, the first step is to run the python script:
 
@@ -46,9 +61,28 @@ This script will take the weights of the backbone and the weights of the classif
 
 3. The third and last step is to run the python script:
 
-```python main_hierarchy100.py --model_name hierarchy100 --experiment_name hierarchy100 --epochs 50 --lr 0.0001```
+```python main_hierarchy.py --model_name hierarchy100original --experiment_name hierarchy100-testing --epochs 50 --lr 0.01```
 
 This will use the previous trained weights and fine-tune the classifier on the whole CIFAR100 dataset, with the hierarchical approach described in the report.
+
+
+
+## How to run ResNet
+If you want to reproduce the results of experiments with ResNet from scratch, you can do this :
+0. you don't need any weights, so no need to download them
+1. Run all of the cells in ResNet1028_to_100class.ipynb . This is the baseline model
+2. Run all of the cells in ResNet1028_to_d_to_100_plus_graph.ipynb . This is the script for introducing matrix factorization to the ResNet model.
+3. Run all of the cells in ResNet1028_to_parent_Loss_parent_only.ipynb . This is where the model is trained to do parent classification only. In the last few cells the weights are stored as 'group_1028_to_parent_Loss_parent_only_pretrained_model.h5'. They're going to be used later.
+4. Go to 20_Child_Classifiers/ResNet1028_to_parent_to_child_Loss_parent_only_LOOP copy.ipynb and  run all of the cells. The accuracy of child classification for each of the 20 parents are stored in a list. The arithmetic average of child classification accuracy is calculated in the last cell. The accuracy is suboptimal, so the weigths are not stored.
+5. Run all of the cells in ResNet1028_to_parent_Loss_parent_and_child.ipynb. This is where the model is trained to do both parent and child classification (Loss has two components). In the last few cells the weights are stored as 'group_1028_to_parent_Loss_parent_and_child_pretrained_model.h5'. They're going to be used later.
+6. Go to 20_Child_Classifiers/ResNet1028_to_parent_to_child_Loss_parent+child_LOOP.ipynb and run all of the cells. Twenty child classifiers are trained to do child classification and their weights are stored in the format 'group_1028_to_parent_Loss_parent_and_child_pretrained_model_For_parent_{i}.h5' where i is ranging from 0 to 19.
+7. The problem is that we save redundant information from those models in the previous step. We only need child classifiers' weights. To keep only those weights that we need, go to 20_Child_Classifiers_reduces_size/ResNet1028_to_parent_to_child_Loss_parent+child_LOOP.ipynb and run the cells. It will store weights in the forms of tensors, because in child classification, there is just one simple operation: matrix multiplication and bias being added. For each parent, there is a tensor 'group_1028_to_parent_Loss_parent_and_child_pretrained_model_For_parent_{}_weight_reduced_size.pt' and tensor 'group_1028_to_parent_Loss_parent_and_child_pretrained_model_For_parent_{}_bias_reduced_size.pt'.git
+8. Run all of the cells in Creating_json_parent_to_child.ipynb . This will create a json file, describing a mapping between fine label and child label. It's a nested dictionary:
+{key: (parent) & value: dictionary {key: (fine label) & value: (child label)}}
+9. Run all of the cells in 20_Child_Classifiers_reduces_size/ResNet_1028_to_parent_to_child_hierarchy.ipynb . This is the final result of branching CNN approach of ResNet on the test dataset (100 labels).
+
+If you want to reproduce the results of testing hierarchy with the weights provided from OneDrive, you can do this:
+0. Download 'group_1028_to_parent_Loss_parent_and_child_pretrained_model.h5' and run all of the cells in 20_Child_Classifiers_reduces_size/ResNet_1028_to_parent_to_child_hierarchy.ipynb.
 
 ## Results
 
