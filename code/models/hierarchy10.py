@@ -70,22 +70,12 @@ class ImageClassification(MicroMind):
         self.modules["classifier"] = nn.Sequential(
             nn.Linear(in_features=self.input, out_features=self.output)    
         )
-        # self.modules["classifier"].load_state_dict(pretrained_dict["classifier"])
 
     def forward(self, batch):
 
         feature_vector = self.modules["feature_extractor"](batch[0])
         x = self.modules["flattener"](feature_vector)
         x = self.modules["classifier"](x)
-        # indices_1 = torch.argmax(x, dim=1)
-        # indices_np = indices_1.to('cpu').numpy()
-        # test = batch[1].to('cpu').numpy()
-        # print(test)
-        # print(indices_np)
-        # print(test == indices_np)
-        # print((test == indices_np).sum()/len(indices_1))
-
-        #print(torch.tensor(indices_1.tolist() == batch[1]).sum()/len(indices_1))
 
         return x
 

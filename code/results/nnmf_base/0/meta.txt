@@ -1,1 +1,0 @@
-Namespace(d=0, debug=False, epochs=100, experiment_name='nnmf_base/0/', lr=0.0001, model_name='nnmf_base', opt='adam', output_folder='results')

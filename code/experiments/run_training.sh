@@ -1,1 +1,0 @@
-xterm "python main.py --d ${args[$i]} --model_name original --experiment_name low_learning --epochs 100; exit" &

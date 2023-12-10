@@ -1,1 +1,0 @@
-Namespace(d=90, debug=False, epochs=100, experiment_name='adaptive_relu/90/', lr=0.0001, model_name='adaptiverelu', opt='adam', output_folder='results')
